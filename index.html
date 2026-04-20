@@ -10,8 +10,6 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Planner">
-  <link rel="apple-touch-icon"
-    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%230d0d14' rx='40'/%3E%3Ctext x='96' y='130' font-size='100' text-anchor='middle'%3E🎯%3C/text%3E%3C/svg%3E">
   <link
     href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Barlow+Condensed:wght@700;900&family=Barlow:wght@400;500;600&display=swap"
     rel="stylesheet">
@@ -50,15 +48,15 @@
     }
 
     .nav {
-      position: sticky;
-      top: 0;
-      z-index: 200;
       background: rgba(7, 7, 15, .97);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
       display: flex;
       overflow-x: auto;
       scrollbar-width: none;
+      position: sticky;
+      top: 0;
+      z-index: 9000;
     }
 
     .nav::-webkit-scrollbar {
@@ -76,6 +74,7 @@
       border-bottom: 2px solid transparent;
       transition: all .2s;
       white-space: nowrap;
+      user-select: none;
     }
 
     .nav-tab.active {
@@ -319,7 +318,6 @@
 
     .phase-header {
       padding: 16px;
-      border-bottom: 1px solid var(--border);
       position: relative;
       overflow: hidden;
     }
@@ -374,10 +372,6 @@
       font-family: 'IBM Plex Mono', monospace;
       font-size: 10px;
       color: var(--muted);
-    }
-
-    .phase-body {
-      padding: 14px 16px;
     }
 
     .agenda-grid {
@@ -752,35 +746,39 @@
       min-width: 50px;
       text-align: right;
     }
+
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(7, 7, 15, .97);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid #1e1e32;
+      padding: 10px 16px;
+      display: flex;
+      gap: 8px;
+    }
   </style>
 </head>
 
 <body>
-  <!-- TOAST -->
+
   <div id="toast"
-    style="position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:#1e1e32;border:1px solid #28284a;color:#eeeeff;padding:10px 18px;border-radius:100px;font-family:monospace;font-size:11px;z-index:9999;opacity:0;transition:all .3s;white-space:nowrap;max-width:90vw;text-align:center;pointer-events:none;">
+    style="position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:#1e1e32;border:1px solid #28284a;color:#eeeeff;padding:10px 18px;border-radius:100px;font-family:monospace;font-size:11px;z-index:99999;opacity:0;transition:all .3s;white-space:nowrap;max-width:90vw;text-align:center;pointer-events:none;">
   </div>
-  <!-- NAV TABS -->
-  <nav class="nav" style="position:sticky;top:0;z-index:500;">
-    <div class="nav-tab active" onclick="show('home',this)">🏠 Início</div>
-    <div class="nav-tab" onclick="show('fase1',this)">⚡ Fase 1</div>
-    <div class="nav-tab" onclick="show('fase2',this)">🧱 Fase 2</div>
-    <div class="nav-tab" onclick="show('fase3',this)">☁️ Fase 3</div>
-    <div class="nav-tab" onclick="show('fase4',this)">🐍 Fase 4</div>
-    <div class="nav-tab" onclick="show('semana',this)">📅 Semana</div>
-    <div class="nav-tab" onclick="show('regras',this)">⚡ Regras</div>
-    <div class="nav-tab" onclick="show('pick',this)">🐳 PICK</div>
+
+  <nav class="nav">
+    <div class="nav-tab active" onclick="showPanel('home',this)">🏠 Início</div>
+    <div class="nav-tab" onclick="showPanel('fase1',this)">⚡ Fase 1</div>
+    <div class="nav-tab" onclick="showPanel('fase2',this)">🧱 Fase 2</div>
+    <div class="nav-tab" onclick="showPanel('fase3',this)">☁️ Fase 3</div>
+    <div class="nav-tab" onclick="showPanel('fase4',this)">🐍 Fase 4</div>
+    <div class="nav-tab" onclick="showPanel('semana',this)">📅 Semana</div>
+    <div class="nav-tab" onclick="showPanel('regras',this)">⚡ Regras</div>
+    <div class="nav-tab" onclick="showPanel('pick',this)">🐳 PICK</div>
   </nav>
-  <!-- BOTTOM BAR -->
-  <div
-    style="position:fixed;bottom:0;left:0;right:0;z-index:400;background:rgba(7,7,15,.97);backdrop-filter:blur(12px);border-top:1px solid #1e1e32;padding:10px 16px;display:flex;gap:8px;">
-    <button id="notif-btn" onclick="ativarNotificacoes()"
-      style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.25);border-radius:10px;color:#818cf8;font-family:monospace;font-size:10px;cursor:pointer;font-weight:700;">🔔
-      Ativar lembretes</button>
-    <button id="install-btn" onclick="installApp()"
-      style="display:none;flex:1;align-items:center;justify-content:center;gap:6px;padding:10px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);border-radius:10px;color:#4ade80;font-family:monospace;font-size:10px;cursor:pointer;font-weight:700;">📲
-      Instalar app</button>
-  </div>
 
   <!-- HOME -->
   <div id="home" class="panel active">
@@ -841,25 +839,7 @@
         <div class="phase-header ph-final">
           <div class="phase-num">ENCERRAMENTO · DEZ 1 → 25</div>
           <div class="phase-name">🎄 Super Projeto + Natal</div>
-          <div class="phase-dates">SecureOps Platform — projeto final integrando tudo · 25/dez: plano encerra</div>
-        </div>
-      </div>
-      <div class="sec-label">// instalar + notificações</div>
-      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px;">
-        <button onclick="ativarNotificacoes()"
-          style="width:100%;padding:14px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:12px;color:#4ade80;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
-          🔔 Ativar lembretes de estudo
-        </button>
-        <div id="install-btn" style="display:none;">
-          <button onclick="installApp()"
-            style="width:100%;padding:14px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.3);border-radius:12px;color:#818cf8;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
-            📲 Instalar app no celular
-          </button>
-        </div>
-        <div
-          style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);text-align:center;line-height:1.5;">
-          Lembretes: 17h50 · 21h25 · 21h55 todo dia<br>
-          Quinta 5h45 (Daily) · Sábado 11h45 (Alemão)
+          <div class="phase-dates">SecureOps Platform — projeto final integrando tudo · 25/dez plano encerra</div>
         </div>
       </div>
       <div class="sec-label">// regras que nunca quebram</div>
@@ -936,8 +916,8 @@
             <div class="ad-block"><span class="tag t-pos">18h45</span><span class="ad-title">Pós FIAP — challenge Buffer
                 Overflow</span></div>
             <div class="ad-note">A partir 30/abr: challenge é prioridade 1</div>
-            <div class="ad-block"><span class="tag t-alemao">21h</span><span class="ad-title">Alemão 30–40min (ciclo
-                qui–sáb)</span></div>
+            <div class="ad-block"><span class="tag t-alemao">21h</span><span class="ad-title">Alemão 30–40min</span>
+            </div>
           </div>
         </div>
         <div class="agenda-day">
@@ -953,7 +933,7 @@
           </div>
         </div>
         <div class="agenda-day">
-          <div class="ad-day">SEX<br />LEVE</div>
+          <div class="ad-day">SEX LEVE</div>
           <div class="ad-content">
             <div class="ad-block"><span class="tag t-pick">18h</span><span class="ad-title">PICK — 1 vídeo só</span>
             </div>
@@ -969,7 +949,7 @@
           <div class="ad-day">SAB</div>
           <div class="ad-content">
             <div class="ad-block"><span class="tag t-fixo">7h ou 9h</span><span class="ad-title">PICK ao vivo — confirma
-                horário no email</span></div>
+                no email</span></div>
             <div class="ad-block"><span class="tag t-fixo">12h</span><span class="ad-title">Alemão ao vivo com
                 professor</span></div>
             <div class="ad-block"><span class="tag t-pos">15h</span><span class="ad-title">Pós FIAP — challenge ou
@@ -988,16 +968,16 @@
       </div>
       <div class="sec-label">// checklist fase 1</div>
       <div class="checklist" id="cl1">
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
           <div>
             <div class="check-label">PICK Day 2 — Docker prático completo</div>
-            <div class="check-sub">Em andamento — terminar essa semana</div>
+            <div class="check-sub">Em andamento</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -1005,7 +985,7 @@
             <div class="check-label">PICK Day 3 — Distroless e Segurança</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -1013,7 +993,7 @@
             <div class="check-label">PICK Day 4 — Volumes</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -1021,7 +1001,7 @@
             <div class="check-label">PICK Day 5 — Networks no Docker</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -1029,15 +1009,15 @@
             <div class="check-label">PICK Day 6 — Docker Compose</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
           <div>
-            <div class="check-label">Redes — TCP/IP, portas, scanning (base pentest)</div>
+            <div class="check-label">Redes — TCP/IP, portas, scanning</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -1045,7 +1025,7 @@
             <div class="check-label">Pós FIAP — última aula ao vivo 29/abr</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -1053,7 +1033,7 @@
             <div class="check-label">Challenge — VM baixada e configurada</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -1061,7 +1041,7 @@
             <div class="check-label">Challenge — exploit Buffer Overflow desenvolvido</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -1070,7 +1050,7 @@
           </div>
         </div>
       </div>
-      <div class="sec-label">// projetos de portfólio fase 1</div>
+      <div class="sec-label">// projetos portfólio fase 1</div>
       <div class="projects">
         <div class="project-card">
           <div class="proj-header">
@@ -1086,10 +1066,9 @@
           <div class="proj-header">
             <div class="proj-name">💀 Buffer Overflow Write-up</div><span class="tag t-proj">PORTFÓLIO</span>
           </div>
-          <div class="proj-stack"><span class="tag t-pos">Red Team</span><span class="tag t-redes">Redes</span><span
-              class="tag t-pos">Pentest</span></div>
-          <div class="proj-desc">Documentação técnica completa do challenge da pós no formato CTF write-up. Publica no
-            GitHub e LinkedIn.</div>
+          <div class="proj-stack"><span class="tag t-pos">Red Team</span><span class="tag t-redes">Redes</span></div>
+          <div class="proj-desc">Documentação técnica do challenge em formato CTF write-up. Publica no GitHub e
+            LinkedIn.</div>
           <div class="proj-impact">🎯 Write-ups = melhor portfólio de segurança ofensiva</div>
         </div>
       </div>
@@ -1103,12 +1082,14 @@
         <div class="phase-header ph-eda">
           <div class="phase-num">FASE 02 · JUN → JUL · 2 MESES</div>
           <div class="phase-name">🧱 Base Técnica</div>
-          <div class="phase-dates">EDA/C · Redes completo · AWS Treina começa · PICK 2–3 vídeos/dia · Alemão + Inglês
-          </div>
+          <div class="phase-dates">EDA/C · Redes completo · AWS Treina começa · PICK 2–3/dia · Alemão + Inglês</div>
         </div>
       </div>
       <div class="sec-label">// agenda semanal fase 2</div>
       <div class="agenda-grid">
+        <div
+          style="background:rgba(249,115,22,.06);border:1px solid rgba(249,115,22,.2);border-radius:8px;padding:10px 14px;margin-bottom:6px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#fb923c;display:flex;align-items:center;gap:8px;">
+          🏋️ <strong>04h30 acorda · 05h30–06h30 academia · 07h–16h trabalho</strong> — todo dia, fixo</div>
         <div class="agenda-day">
           <div class="ad-day">SEG</div>
           <div class="ad-content">
@@ -1127,8 +1108,8 @@
           <div class="ad-content">
             <div class="ad-block"><span class="tag t-eda">18h</span><span class="ad-title">EDA/C — implementação em
                 C</span></div>
-            <div class="ad-block"><span class="tag t-aws">20h</span><span class="ad-title">AWS Treina Brasil — módulo do
-                dia</span></div>
+            <div class="ad-block"><span class="tag t-aws">20h</span><span class="ad-title">AWS Treina Brasil</span>
+            </div>
             <div class="ad-block"><span class="tag t-ingles">21h</span><span class="ad-title">Inglês passivo
                 30min</span></div>
             <div class="ad-block"><span class="tag t-alemao">21h30</span><span class="ad-title">Alemão 30min</span>
@@ -1144,7 +1125,7 @@
                 segurança</span></div>
             <div class="ad-block"><span class="tag t-pick">20h30</span><span class="ad-title">PICK — 2 vídeos</span>
             </div>
-            <div class="ad-block"><span class="tag t-alemao">21h30</span><span class="ad-title">Alemão 30–40min</span>
+            <div class="ad-block"><span class="tag t-alemao">21h30</span><span class="ad-title">Alemão 30min</span>
             </div>
           </div>
         </div>
@@ -1155,14 +1136,13 @@
                 15min</span></div>
             <div class="ad-block"><span class="tag t-eda">18h</span><span class="ad-title">EDA/C — projeto
                 prático</span></div>
-            <div class="ad-block"><span class="tag t-pick">20h</span><span class="ad-title">PICK — 2 vídeos K8s</span>
-            </div>
+            <div class="ad-block"><span class="tag t-pick">20h</span><span class="ad-title">PICK — 2 vídeos</span></div>
             <div class="ad-block"><span class="tag t-alemao">21h30</span><span class="ad-title">Alemão 30min</span>
             </div>
           </div>
         </div>
         <div class="agenda-day">
-          <div class="ad-day">SEX<br />LEVE</div>
+          <div class="ad-day">SEX LEVE</div>
           <div class="ad-content">
             <div class="ad-block"><span class="tag t-redes">18h</span><span class="ad-title">Redes — revisão leve</span>
             </div>
@@ -1176,14 +1156,13 @@
         <div class="agenda-day">
           <div class="ad-day">SAB</div>
           <div class="ad-content">
-            <div class="ad-block"><span class="tag t-fixo">7h ou 9h</span><span class="ad-title">PICK ao vivo — confirma
-                no email</span></div>
+            <div class="ad-block"><span class="tag t-fixo">7h ou 9h</span><span class="ad-title">PICK ao vivo</span>
+            </div>
             <div class="ad-block"><span class="tag t-fixo">12h</span><span class="ad-title">Alemão ao vivo com
                 professor</span></div>
             <div class="ad-block"><span class="tag t-eda">15h</span><span class="ad-title">EDA/C — projeto +
                 GitHub</span></div>
-            <div class="ad-block"><span class="tag t-aws">18h</span><span class="ad-title">AWS Treina — módulo</span>
-            </div>
+            <div class="ad-block"><span class="tag t-aws">18h</span><span class="ad-title">AWS Treina</span></div>
           </div>
         </div>
         <div class="agenda-day">
@@ -1196,7 +1175,7 @@
       </div>
       <div class="sec-label">// checklist fase 2</div>
       <div class="checklist" id="cl2">
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -1204,15 +1183,15 @@
             <div class="check-label">EDA — Listas encadeadas simples e dupla em C</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
           <div>
-            <div class="check-label">EDA — Árvores Binárias BST completas em C</div>
+            <div class="check-label">EDA — Árvores Binárias BST em C</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -1220,7 +1199,7 @@
             <div class="check-label">EDA — Grafos BFS + DFS em C</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -1228,7 +1207,7 @@
             <div class="check-label">Redes — OSI + TCP/IP completo</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -1236,15 +1215,7 @@
             <div class="check-label">Redes — DNS, HTTP/S, TLS</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
-          <div class="check-box">
-            <div class="check-inner">✓</div>
-          </div>
-          <div>
-            <div class="check-label">Redes — Segurança: firewalls, VPN, IDS</div>
-          </div>
-        </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -1252,7 +1223,7 @@
             <div class="check-label">AWS Treina — fundamentos cloud iniciados</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -1260,24 +1231,24 @@
             <div class="check-label">PICK — Kubernetes Days 1–4 completos</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
           <div>
-            <div class="check-label">Alemão — A2 consolidado (avaliação jul)</div>
+            <div class="check-label">Alemão — A2 consolidado</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
           <div>
-            <div class="check-label">🏖️ Jul — 1 semana de folga real merecida</div>
+            <div class="check-label">🏖️ Jul — 1 semana de folga merecida</div>
           </div>
         </div>
       </div>
-      <div class="sec-label">// projetos de portfólio fase 2</div>
+      <div class="sec-label">// projetos portfólio fase 2</div>
       <div class="projects">
         <div class="project-card">
           <div class="proj-header">
@@ -1285,8 +1256,8 @@
           </div>
           <div class="proj-stack"><span class="tag t-eda">C</span><span class="tag t-eda">Lista Encadeada</span><span
               class="tag t-redes">Redes</span></div>
-          <div class="proj-desc">Scanner que usa lista encadeada pra armazenar hosts, verifica portas abertas e gera
-            relatório. EDA + Redes num projeto real.</div>
+          <div class="proj-desc">Scanner que usa lista encadeada, verifica portas abertas e gera relatório. EDA + Redes
+            num projeto real.</div>
           <div class="proj-impact">🎯 C + estruturas + redes — combo raro no portfólio</div>
         </div>
         <div class="project-card">
@@ -1295,9 +1266,9 @@
           </div>
           <div class="proj-stack"><span class="tag t-eda">Grafos C</span><span class="tag t-redes">Topologia</span>
           </div>
-          <div class="proj-desc">Mapeia topologia de rede usando grafos. Mostra caminho mais curto entre hosts com
-            Dijkstra.</div>
-          <div class="proj-impact">🎯 Algoritmos clássicos aplicados em segurança real</div>
+          <div class="proj-desc">Mapeia topologia de rede com grafos e Dijkstra. Algoritmos clássicos em contexto real.
+          </div>
+          <div class="proj-impact">🎯 Demonstra EDA aplicado em segurança</div>
         </div>
       </div>
     </div>
@@ -1315,6 +1286,9 @@
       </div>
       <div class="sec-label">// agenda semanal fase 3</div>
       <div class="agenda-grid">
+        <div
+          style="background:rgba(249,115,22,.06);border:1px solid rgba(249,115,22,.2);border-radius:8px;padding:10px 14px;margin-bottom:6px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#fb923c;display:flex;align-items:center;gap:8px;">
+          🏋️ <strong>04h30 acorda · 05h30–06h30 academia · 07h–16h trabalho</strong> — todo dia, fixo</div>
         <div class="agenda-day">
           <div class="ad-day">SEG</div>
           <div class="ad-content">
@@ -1322,8 +1296,7 @@
                 interview técnica</span></div>
             <div class="ad-block"><span class="tag t-aws">18h45</span><span class="ad-title">AWS — Cloud
                 Practitioner</span></div>
-            <div class="ad-block"><span class="tag t-pick">21h</span><span class="ad-title">PICK — 2 vídeos
-                K8s/CKS</span></div>
+            <div class="ad-block"><span class="tag t-pick">21h</span><span class="ad-title">PICK — 2 vídeos</span></div>
             <div class="ad-block"><span class="tag t-alemao">21h30</span><span class="ad-title">Alemão 30min —
                 vocabulário TI</span></div>
           </div>
@@ -1366,10 +1339,10 @@
           </div>
         </div>
         <div class="agenda-day">
-          <div class="ad-day">SEX<br />LEVE</div>
+          <div class="ad-day">SEX LEVE</div>
           <div class="ad-content">
-            <div class="ad-block"><span class="tag t-aws">18h</span><span class="ad-title">AWS — revisão leve 1
-                tópico</span></div>
+            <div class="ad-block"><span class="tag t-aws">18h</span><span class="ad-title">AWS — revisão 1 tópico</span>
+            </div>
             <div class="ad-block"><span class="tag t-ingles">19h</span><span class="ad-title">Inglês —
                 entretenimento</span></div>
             <div class="ad-block"><span class="tag t-rest">20h</span><span class="ad-title">Livre</span></div>
@@ -1384,8 +1357,8 @@
             </div>
             <div class="ad-block"><span class="tag t-fixo">12h</span><span class="ad-title">Alemão ao vivo com
                 professor</span></div>
-            <div class="ad-block"><span class="tag t-aws">15h</span><span class="ad-title">AWS — labs práticos +
-                portfólio</span></div>
+            <div class="ad-block"><span class="tag t-aws">15h</span><span class="ad-title">AWS — labs + portfólio</span>
+            </div>
           </div>
         </div>
         <div class="agenda-day">
@@ -1398,7 +1371,7 @@
       </div>
       <div class="sec-label">// checklist fase 3</div>
       <div class="checklist" id="cl3">
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -1406,7 +1379,7 @@
             <div class="check-label">AWS — EC2, S3, VPC, IAM dominados</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -1414,7 +1387,7 @@
             <div class="check-label">AWS — RDS, Lambda, CloudWatch</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -1422,7 +1395,7 @@
             <div class="check-label">🎯 AWS Cloud Practitioner — APROVADO</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -1430,15 +1403,15 @@
             <div class="check-label">PICK — Kubernetes Days 5–8 completos</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
           <div>
-            <div class="check-label">Inglês — mock interview técnica em inglês</div>
+            <div class="check-label">Inglês — mock interview técnica</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -1446,12 +1419,12 @@
             <div class="check-label">Alemão — B1 · vocabulário TI em alemão</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
           <div>
-            <div class="check-label">LinkedIn atualizado em inglês e alemão</div>
+            <div class="check-label">LinkedIn em inglês e alemão</div>
           </div>
         </div>
       </div>
@@ -1463,9 +1436,9 @@
           </div>
           <div class="proj-stack"><span class="tag t-aws">AWS</span><span class="tag t-aws">Terraform</span><span
               class="tag t-pick">Docker</span><span class="tag t-pick">K8s</span></div>
-          <div class="proj-desc">Deploy de app containerizada na AWS com VPC privada, IAM least privilege, CloudWatch e
-            CI/CD com scan de vulnerabilidades.</div>
-          <div class="proj-impact">🎯 DevSecOps cloud — exatamente o que empresas europeias buscam</div>
+          <div class="proj-desc">Deploy containerizado na AWS com VPC privada, IAM least privilege, CloudWatch e CI/CD
+            com Trivy.</div>
+          <div class="proj-impact">🎯 DevSecOps cloud — o que empresas europeias buscam</div>
         </div>
       </div>
     </div>
@@ -1484,6 +1457,9 @@
       </div>
       <div class="sec-label">// agenda semanal fase 4</div>
       <div class="agenda-grid">
+        <div
+          style="background:rgba(249,115,22,.06);border:1px solid rgba(249,115,22,.2);border-radius:8px;padding:10px 14px;margin-bottom:6px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#fb923c;display:flex;align-items:center;gap:8px;">
+          🏋️ <strong>04h30 acorda · 05h30–06h30 academia · 07h–16h trabalho</strong> — todo dia, fixo</div>
         <div class="agenda-day">
           <div class="ad-day">SEG</div>
           <div class="ad-content">
@@ -1492,8 +1468,8 @@
             <div class="ad-block"><span class="tag t-python">18h45</span><span class="ad-title">Python — scripts,
                 automação, segurança</span></div>
             <div class="ad-block"><span class="tag t-pick">21h</span><span class="ad-title">PICK — 2 vídeos</span></div>
-            <div class="ad-block"><span class="tag t-alemao">21h30</span><span class="ad-title">Alemão — prep entrevista
-                técnica</span></div>
+            <div class="ad-block"><span class="tag t-alemao">21h30</span><span class="ad-title">Alemão — prep
+                entrevista</span></div>
           </div>
         </div>
         <div class="agenda-day">
@@ -1527,14 +1503,14 @@
             <div class="ad-block"><span class="tag t-fixo">06h</span><span class="ad-title">Daily Discord — Jefferson
                 15min</span></div>
             <div class="ad-block"><span class="tag t-python">18h</span><span class="ad-title">Python/Java — super
-                projeto</span></div>
+                projeto SecureOps</span></div>
             <div class="ad-block"><span class="tag t-pick">20h</span><span class="ad-title">PICK — 2 vídeos</span></div>
             <div class="ad-block"><span class="tag t-alemao">21h30</span><span class="ad-title">Alemão 30min</span>
             </div>
           </div>
         </div>
         <div class="agenda-day">
-          <div class="ad-day">SEX<br />LEVE</div>
+          <div class="ad-day">SEX LEVE</div>
           <div class="ad-content">
             <div class="ad-block"><span class="tag t-python">18h</span><span class="ad-title">1 exercício Python ou
                 Java</span></div>
@@ -1566,23 +1542,23 @@
       </div>
       <div class="sec-label">// checklist fase 4</div>
       <div class="checklist" id="cl4">
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
           <div>
-            <div class="check-label">Python — scripts de automação funcionando</div>
+            <div class="check-label">Python — scripts de automação</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
           <div>
-            <div class="check-label">Python — ferramentas de segurança (Scapy, requests)</div>
+            <div class="check-label">Python — ferramentas segurança (Scapy, requests)</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -1590,15 +1566,15 @@
             <div class="check-label">Java — OOP dominado</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
           <div>
-            <div class="check-label">Java — Spring Boot básico funcionando</div>
+            <div class="check-label">Java — Spring Boot básico</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -1606,7 +1582,7 @@
             <div class="check-label">PICK — Days 9–12 completos</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -1614,7 +1590,7 @@
             <div class="check-label">Alemão — entrevista técnica simulada com professor</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -1622,12 +1598,12 @@
             <div class="check-label">GitHub — 4+ projetos com README em inglês</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
           <div>
-            <div class="check-label">LinkedIn em inglês + alemão — pronto pra candidaturas</div>
+            <div class="check-label">LinkedIn em inglês + alemão</div>
           </div>
         </div>
       </div>
@@ -1649,9 +1625,8 @@
           </div>
           <div class="proj-stack"><span class="tag t-python">Java</span><span class="tag t-python">Spring
               Boot</span><span class="tag t-aws">AWS</span><span class="tag t-pick">Docker</span></div>
-          <div class="proj-desc">API REST em Java/Spring pra monitorar serviços. Deploy na AWS com Docker. Integra toda
-            a jornada.</div>
-          <div class="proj-impact">🎯 Java + Spring + AWS = stack corporativa padrão na Alemanha</div>
+          <div class="proj-desc">API REST em Java/Spring pra monitorar serviços. Deploy na AWS com Docker.</div>
+          <div class="proj-impact">🎯 Java + Spring + AWS = stack padrão na Alemanha</div>
         </div>
       </div>
     </div>
@@ -1660,6 +1635,88 @@
   <!-- SEMANA -->
   <div id="semana" class="panel">
     <div class="section">
+      <div class="sec-label">// 🏋️ academia — marque cada treino da semana</div>
+      <div
+        style="background:var(--s1);border:1px solid rgba(249,115,22,.3);border-radius:14px;overflow:hidden;margin-bottom:16px;">
+        <div
+          style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--bright);">
+              🏋️ Academia — 05h30 todo dia</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);">04h30 acorda ·
+              05h30–06h30 treino · 07h trabalho</div>
+          </div>
+          <div id="gym-streak"
+            style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:#fb923c;">0/7</div>
+        </div>
+        <div style="padding:12px 16px;">
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:12px;" id="gym-days">
+            <div onclick="toggleGym(this,'seg')" data-day="seg"
+              style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;background:var(--s2);border:1px solid var(--border2);border-radius:8px;transition:all .15s;">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--muted);">SEG</div>
+              <div style="font-size:16px;">🏋️</div>
+              <div class="gym-check"
+                style="width:14px;height:14px;border-radius:3px;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#000;">
+              </div>
+            </div>
+            <div onclick="toggleGym(this,'ter')" data-day="ter"
+              style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;background:var(--s2);border:1px solid var(--border2);border-radius:8px;transition:all .15s;">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--muted);">TER</div>
+              <div style="font-size:16px;">🏋️</div>
+              <div class="gym-check"
+                style="width:14px;height:14px;border-radius:3px;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#000;">
+              </div>
+            </div>
+            <div onclick="toggleGym(this,'qua')" data-day="qua"
+              style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;background:var(--s2);border:1px solid var(--border2);border-radius:8px;transition:all .15s;">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--muted);">QUA</div>
+              <div style="font-size:16px;">🏋️</div>
+              <div class="gym-check"
+                style="width:14px;height:14px;border-radius:3px;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#000;">
+              </div>
+            </div>
+            <div onclick="toggleGym(this,'qui')" data-day="qui"
+              style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;background:var(--s2);border:1px solid var(--border2);border-radius:8px;transition:all .15s;">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--muted);">QUI</div>
+              <div style="font-size:16px;">🏋️</div>
+              <div class="gym-check"
+                style="width:14px;height:14px;border-radius:3px;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#000;">
+              </div>
+            </div>
+            <div onclick="toggleGym(this,'sex')" data-day="sex"
+              style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;background:var(--s2);border:1px solid var(--border2);border-radius:8px;transition:all .15s;">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--muted);">SEX</div>
+              <div style="font-size:16px;">🏋️</div>
+              <div class="gym-check"
+                style="width:14px;height:14px;border-radius:3px;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#000;">
+              </div>
+            </div>
+            <div onclick="toggleGym(this,'sab')" data-day="sab"
+              style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;background:var(--s2);border:1px solid var(--border2);border-radius:8px;transition:all .15s;">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--muted);">SÁB</div>
+              <div style="font-size:16px;">🏋️</div>
+              <div class="gym-check"
+                style="width:14px;height:14px;border-radius:3px;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#000;">
+              </div>
+            </div>
+            <div onclick="toggleGym(this,'dom')" data-day="dom"
+              style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;background:var(--s2);border:1px solid var(--border2);border-radius:8px;transition:all .15s;">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--muted);">DOM</div>
+              <div style="font-size:16px;">🏋️</div>
+              <div class="gym-check"
+                style="width:14px;height:14px;border-radius:3px;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#000;">
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div id="gym-msg" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);">Toque nos
+              dias que treinou 💪</div>
+            <button onclick="resetGym()"
+              style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);background:none;border:1px solid var(--border2);border-radius:6px;padding:4px 8px;cursor:pointer;">reset
+              semana</button>
+          </div>
+        </div>
+      </div>
       <div class="sec-label">// semana tipo · modelo geral</div>
       <div class="day-card">
         <div class="day-hd">
@@ -1688,7 +1745,7 @@
           <div class="blk">
             <div class="blk-t">21h00</div>
             <div class="blk-c">
-              <div class="blk-top"><span class="blk-title">Conteúdo secundário / PICK 2 vídeos</span></div>
+              <div class="blk-top"><span class="tag t-pick">PICK</span><span class="blk-title">2 vídeos</span></div>
             </div>
           </div>
           <div class="blk-sep"></div>
@@ -1721,15 +1778,14 @@
             <div class="blk-t">18h45</div>
             <div class="blk-c">
               <div class="blk-top"><span class="blk-title">Conteúdo secundário da fase</span></div>
-              <div class="blk-note">2h. Alterna com segunda pra não repetir.</div>
+              <div class="blk-note">2h. Alterna com segunda.</div>
             </div>
           </div>
           <div class="blk-sep"></div>
           <div class="blk">
             <div class="blk-t">21h00</div>
             <div class="blk-c">
-              <div class="blk-top"><span class="tag t-pick">PICK</span><span class="blk-title">2 vídeos — manter
-                  ritmo</span></div>
+              <div class="blk-top"><span class="tag t-pick">PICK</span><span class="blk-title">2 vídeos</span></div>
             </div>
           </div>
           <div class="blk-sep"></div>
@@ -1737,7 +1793,7 @@
             <div class="blk-t">21h30</div>
             <div class="blk-c">
               <div class="blk-top"><span class="tag t-fixo">TODO DIA</span><span class="tag t-alemao">ALEMÃO</span><span
-                  class="blk-title">30–40min ciclo qui–sáb</span></div>
+                  class="blk-title">30min</span></div>
             </div>
           </div>
         </div>
@@ -1761,7 +1817,7 @@
           <div class="blk">
             <div class="blk-t">18h00</div>
             <div class="blk-c">
-              <div class="blk-top"><span class="blk-title">Estudo da fase ou Zoom FIAP (fase 1)</span></div>
+              <div class="blk-top"><span class="blk-title">Estudo da fase (ou Zoom FIAP na fase 1)</span></div>
             </div>
           </div>
           <div class="blk-sep"></div>
@@ -1801,7 +1857,7 @@
             <div class="blk-t">19h00</div>
             <div class="blk-c">
               <div class="blk-top"><span class="tag t-ingles">INGLÊS</span><span class="blk-title">Série, filme, YouTube
-                  — lazer em inglês</span></div>
+                  — lazer</span></div>
             </div>
           </div>
           <div class="blk-sep"></div>
@@ -1843,21 +1899,21 @@
             <div class="blk-c">
               <div class="blk-top"><span class="tag t-fixo">FIXO</span><span class="tag t-alemao">ALEMÃO</span><span
                   class="blk-title">Aula ao vivo com professor</span></div>
-              <div class="blk-note">Prioridade máxima. Chega com 1 dúvida preparada.</div>
+              <div class="blk-note">Prioridade máxima. Chega com 1 dúvida.</div>
             </div>
           </div>
           <div class="blk-sep"></div>
           <div class="blk">
             <div class="blk-t">15h00</div>
             <div class="blk-c">
-              <div class="blk-top"><span class="blk-title">Estudo principal da fase — 2–3h</span></div>
+              <div class="blk-top"><span class="blk-title">Estudo principal da fase</span></div>
             </div>
           </div>
           <div class="blk-sep"></div>
           <div class="blk">
             <div class="blk-t">18h00</div>
             <div class="blk-c">
-              <div class="blk-top"><span class="blk-title">Projeto de portfólio ou PICK</span></div>
+              <div class="blk-top"><span class="blk-title">Projeto portfólio ou PICK</span></div>
               <div class="blk-note">Até 20h. Depois é seu.</div>
             </div>
           </div>
@@ -1880,7 +1936,7 @@
         <div class="rule">
           <div class="rule-ico">🇩🇪</div>
           <div class="rule-title">Alemão todo dia</div>
-          <div class="rule-txt">30min às 21h30. Imóvel. É sua porta pra Alemanha.</div>
+          <div class="rule-txt">30min às 21h30. Imóvel. Porta pra Alemanha.</div>
         </div>
         <div class="rule">
           <div class="rule-ico">📌</div>
@@ -1915,7 +1971,7 @@
         <div class="rule">
           <div class="rule-ico">🌾</div>
           <div class="rule-title">Vida acontece</div>
-          <div class="rule-txt">Saída com tio, fazenda — vai sem culpa. Consistência é no mês.</div>
+          <div class="rule-txt">Saída com tio, fazenda — vai sem culpa.</div>
         </div>
       </div>
       <div class="sec-label">// super projeto final · dez 2025</div>
@@ -1928,7 +1984,7 @@
           style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:var(--bright);margin-bottom:10px;line-height:1;">
           🚀 SecureOps Platform</div>
         <div style="font-size:13px;color:var(--text);line-height:1.6;margin-bottom:12px;">Plataforma que integra tudo
-          que você aprendeu no ano. O projeto principal do seu LinkedIn e GitHub.</div>
+          que você aprendeu. O projeto principal do seu LinkedIn e GitHub.</div>
         <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;"><span
             class="tag t-python">Python</span><span class="tag t-python">Java/Spring</span><span
             class="tag t-pick">Docker</span><span class="tag t-pick">Kubernetes</span><span
@@ -1936,19 +1992,15 @@
             class="tag t-redes">Redes</span></div>
         <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:14px;">
           <div style="display:flex;gap:8px;font-size:12px;color:var(--text);"><span
-              style="color:var(--gold);">→</span>Scanner de hosts em C com lista encadeada + SQLite</div>
+              style="color:var(--gold);">→</span>Scanner de hosts em C + lista encadeada + SQLite</div>
           <div style="display:flex;gap:8px;font-size:12px;color:var(--text);"><span
               style="color:var(--gold);">→</span>API REST em Java/Spring que consome o scanner</div>
           <div style="display:flex;gap:8px;font-size:12px;color:var(--text);"><span
               style="color:var(--gold);">→</span>Scripts Python de automação e análise de logs</div>
           <div style="display:flex;gap:8px;font-size:12px;color:var(--text);"><span
-              style="color:var(--gold);">→</span>Tudo containerizado Docker + deploy Kubernetes na AWS</div>
-          <div style="display:flex;gap:8px;font-size:12px;color:var(--text);"><span
-              style="color:var(--gold);">→</span>Pipeline CI/CD com scan Trivy</div>
+              style="color:var(--gold);">→</span>Docker + Kubernetes na AWS com CI/CD Trivy</div>
           <div style="display:flex;gap:8px;font-size:12px;color:var(--text);"><span
               style="color:var(--gold);">→</span>README em inglês e alemão</div>
-          <div style="display:flex;gap:8px;font-size:12px;color:var(--text);"><span
-              style="color:var(--gold);">→</span>Write-up de segurança documentando o projeto</div>
         </div>
         <div style="font-size:12px;color:#4ade80;font-weight:700;">🎯 Esse projeto diferencia você de 95% dos candidatos
           no mercado europeu.</div>
@@ -1966,7 +2018,7 @@
           style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:#818cf8;margin-bottom:4px;">
           🐳 PICK / LINUXtips</div>
         <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:14px;">
-          Programa contínuo · Meta: 3 vídeos/dia · Até mar/2027 · Sáb ao vivo (confirma horário no email)</div>
+          Programa contínuo · Meta: 3 vídeos/dia · Até mar/2027 · Sáb ao vivo (confirma no email)</div>
         <div class="pt-stats">
           <div class="pt-stat">
             <div class="pt-num" style="color:var(--pos);">~30</div>
@@ -1982,7 +2034,7 @@
           </div>
         </div>
         <div class="pt-row">
-          <div class="pt-rl">Fase 1 (mai)</div>
+          <div class="pt-rl">Fase 1</div>
           <div class="pt-bw">
             <div class="pt-b" style="width:100%"></div>
           </div>
@@ -2005,7 +2057,7 @@
       </div>
       <div class="sec-label">// checklist PICK — containers days 1–6</div>
       <div class="checklist" id="clp1">
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -2014,16 +2066,16 @@
             <div class="check-sub">Concluído</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
           <div>
             <div class="check-label">Day 2 — Docker prático</div>
-            <div class="check-sub">Em andamento — terminar essa semana</div>
+            <div class="check-sub">Em andamento</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -2031,7 +2083,7 @@
             <div class="check-label">Day 3 — Distroless e Segurança</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -2039,7 +2091,7 @@
             <div class="check-label">Day 4 — Volumes e Storage</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -2047,7 +2099,7 @@
             <div class="check-label">Day 5 — Networks no Docker</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -2058,7 +2110,7 @@
       </div>
       <div class="sec-label">// checklist PICK — kubernetes</div>
       <div class="checklist" id="clp2">
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -2066,7 +2118,7 @@
             <div class="check-label">Kubernetes Day 1 — kind + kubectl</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -2074,7 +2126,7 @@
             <div class="check-label">Kubernetes Day 2</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -2082,7 +2134,7 @@
             <div class="check-label">Kubernetes Day 3</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -2090,7 +2142,7 @@
             <div class="check-label">Kubernetes Day 4</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -2098,7 +2150,7 @@
             <div class="check-label">Kubernetes Day 5</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
@@ -2106,150 +2158,230 @@
             <div class="check-label">Kubernetes Day 6</div>
           </div>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box">
             <div class="check-inner">✓</div>
           </div>
           <div>
             <div class="check-label">Aulas ao vivo sábado — em dia</div>
-            <div class="check-sub">Confirma horário (7h ou 9h) todo sábado no email</div>
+            <div class="check-sub">Confirma horário (7h ou 9h) no email</div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- BOTTOM BAR -->
+  <div class="bottom-bar">
+    <button id="notif-btn" onclick="ativarNotificacoes()"
+      style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.25);border-radius:10px;color:#818cf8;font-family:monospace;font-size:10px;cursor:pointer;font-weight:700;">🔔
+      Ativar lembretes</button>
+    <button id="install-btn" onclick="installApp()"
+      style="display:none;flex:1;align-items:center;justify-content:center;gap:6px;padding:10px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);border-radius:10px;color:#4ade80;font-family:monospace;font-size:10px;cursor:pointer;font-weight:700;">📲
+      Instalar app</button>
+  </div>
+
   <script>
-    // ── NAV ──
-    function show(id, el) {
-      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    // ── NAVEGAÇÃO ──
+    function showPanel(id, el) {
+      document.querySelectorAll('.panel').forEach(function (p) { p.classList.remove('active'); });
+      document.querySelectorAll('.nav-tab').forEach(function (t) { t.classList.remove('active'); });
       document.getElementById(id).classList.add('active');
       el.classList.add('active');
+      window.scrollTo(0, 0);
     }
 
     // ── CHECKLIST ──
-    function toggle(el) { el.classList.toggle('done'); save(); }
-
-    function save() {
-      const s = {};
-      document.querySelectorAll('.checklist').forEach(c => {
-        s[c.id] = [...c.querySelectorAll('.check-item')].map(i => i.classList.contains('done'));
-      });
-      try { localStorage.setItem('cr25', JSON.stringify(s)); } catch (e) { }
+    function toggleCheck(el) {
+      el.classList.toggle('done');
+      saveChecks();
     }
-
-    function load() {
+    function saveChecks() {
+      var s = {};
+      document.querySelectorAll('.checklist').forEach(function (c) {
+        s[c.id] = Array.from(c.querySelectorAll('.check-item')).map(function (i) { return i.classList.contains('done'); });
+      });
+      try { localStorage.setItem('cesar2025', JSON.stringify(s)); } catch (e) { }
+    }
+    function loadChecks() {
       try {
-        const s = JSON.parse(localStorage.getItem('cr25') || '{}');
-        document.querySelectorAll('.checklist').forEach(c => {
+        var s = JSON.parse(localStorage.getItem('cesar2025') || '{}');
+        document.querySelectorAll('.checklist').forEach(function (c) {
           if (s[c.id]) {
-            const items = c.querySelectorAll('.check-item');
-            s[c.id].forEach((d, i) => { if (d && items[i]) items[i].classList.add('done'); });
+            var items = c.querySelectorAll('.check-item');
+            s[c.id].forEach(function (done, i) { if (done && items[i]) items[i].classList.add('done'); });
           }
         });
       } catch (e) { }
     }
-    load();
+    loadChecks();
 
     // ── TOAST ──
     function showToast(msg) {
-      const t = document.getElementById('toast');
+      var t = document.getElementById('toast');
       t.textContent = msg;
       t.style.opacity = '1';
       t.style.transform = 'translateY(0)';
-      setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateY(20px)'; }, 3500);
+      setTimeout(function () { t.style.opacity = '0'; t.style.transform = 'translateY(20px)'; }, 3500);
     }
 
     // ── SERVICE WORKER ──
-    let swReg = null;
+    var swReg = null;
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js')
-        .then(reg => { swReg = reg; })
-        .catch(e => console.log('SW erro:', e));
-    }
-
-    // ── PWA INSTALL ──
-    let deferredPrompt = null;
-
-    window.addEventListener('beforeinstallprompt', e => {
-      e.preventDefault();
-      deferredPrompt = e;
-      const btn = document.getElementById('install-btn');
-      if (btn) btn.style.display = 'flex';
-    });
-
-    window.addEventListener('appinstalled', () => {
-      deferredPrompt = null;
-      const btn = document.getElementById('install-btn');
-      if (btn) btn.style.display = 'none';
-      showToast('Planner instalado!');
-    });
-
-    function installApp() {
-      if (!deferredPrompt) { showToast('Abra no Chrome e toque em "Adicionar à tela inicial"'); return; }
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+      navigator.serviceWorker.register('./sw.js').then(function (reg) {
+        swReg = reg;
+      }).catch(function (e) { console.log('SW erro:', e); });
     }
 
     // ── NOTIFICAÇÕES ──
-    const LEMBRETES = [
-      { hora: 17, min: 50, title: '⚡ Hora de estudar!', body: '18h chegando — prepara o ambiente.', tag: 'start' },
-      { hora: 21, min: 25, title: '🇩🇪 Alemão em 5min', body: '30min. Imóvel. Porta pra Alemanha.', tag: 'alemao' },
-      { hora: 21, min: 55, title: '🌙 Encerrando o dia', body: 'Anota o que aprendeu hoje. Dorme bem.', tag: 'end' },
-      { hora: 5, min: 25, title: '🏋️ Academia em 5min', body: '5h30 — academia. Você sempre vai.', tag: 'gym' },
+    var LEMBRETES = [
+      { h: 17, m: 50, title: '⚡ Hora de estudar!', body: '18h chegando — prepara o ambiente.' },
+      { h: 21, m: 25, title: '🇩🇪 Alemão em 5min', body: '21h30 — 30min de alemão. Imóvel. Vai!' },
+      { h: 21, m: 55, title: '🌙 Encerrando', body: '22h chegando — anota o que aprendeu hoje.' },
     ];
 
-    function sendNotif(title, body, tag) {
-      if (!swReg || !swReg.active) return;
-      swReg.active.postMessage({ type: 'SHOW_NOTIFICATION', title, body, tag });
+    function agendarLembretes() {
+      LEMBRETES.forEach(function (l) {
+        var agora = new Date();
+        var alvo = new Date();
+        alvo.setHours(l.h, l.m, 0, 0);
+        if (alvo <= agora) alvo.setDate(alvo.getDate() + 1);
+        var diff = alvo - agora;
+        setTimeout(function () {
+          dispararNotif(l.title, l.body);
+          setInterval(function () { dispararNotif(l.title, l.body); }, 86400000);
+        }, diff);
+      });
     }
 
-    function agendarTodos() {
-      LEMBRETES.forEach(l => {
-        const now = new Date();
-        const t = new Date();
-        t.setHours(l.hora, l.min, 0, 0);
-        if (t <= now) t.setDate(t.getDate() + 1);
-        setTimeout(() => {
-          sendNotif(l.title, l.body, l.tag);
-          setInterval(() => sendNotif(l.title, l.body, l.tag), 86400000);
-        }, t - now);
+    function dispararNotif(title, body) {
+      if (!swReg || Notification.permission !== 'granted') return;
+      navigator.serviceWorker.ready.then(function (reg) {
+        if (reg.active) reg.active.postMessage({ type: 'SHOW_NOTIFICATION', title: title, body: body, tag: title });
       });
-      // Daily quinta
-      const now = new Date();
-      const thu = new Date(); thu.setHours(5, 45, 0, 0);
-      thu.setDate(thu.getDate() + ((4 - now.getDay() + 7) % 7 || 7));
-      setTimeout(() => {
-        sendNotif('Daily Discord em 15min', 'Jefferson — LINUXtips. 6h em ponto.', 'daily');
-        setInterval(() => sendNotif('Daily Discord em 15min', 'Jefferson — LINUXtips. 6h em ponto.', 'daily'), 604800000);
-      }, thu - now);
-      // Alemão sábado
-      const sat = new Date(); sat.setHours(11, 45, 0, 0);
-      sat.setDate(sat.getDate() + ((6 - now.getDay() + 7) % 7 || 7));
-      setTimeout(() => {
-        sendNotif('🇩🇪 Alemão em 15min!', 'Chega com 1 dúvida. 12h em ponto.', 'alemao-aula');
-        setInterval(() => sendNotif('🇩🇪 Alemão em 15min!', 'Chega com 1 dúvida. 12h em ponto.', 'alemao-aula'), 604800000);
-      }, sat - now);
     }
 
     async function ativarNotificacoes() {
-      if (!('Notification' in window)) { showToast('Navegador não suporta notificações.'); return; }
-      const perm = await Notification.requestPermission();
+      if (!('Notification' in window)) { showToast('Navegador não suporta notificações'); return; }
+      var perm = await Notification.requestPermission();
       if (perm === 'granted') {
-        agendarTodos();
-        const btn = document.getElementById('notif-btn');
-        if (btn) { btn.textContent = '🔔 Lembretes ativos'; btn.style.cssText += ';background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.4);color:#4ade80'; }
-        showToast('✅ Lembretes ativados!');
+        agendarLembretes();
+        var btn = document.getElementById('notif-btn');
+        btn.textContent = '✅ Lembretes ativos';
+        btn.style.background = 'rgba(34,197,94,.15)';
+        btn.style.borderColor = 'rgba(34,197,94,.4)';
+        btn.style.color = '#4ade80';
+        showToast('Lembretes ativados! 17h50, 21h25 e 21h55.');
       } else {
-        showToast('⚠️ Permita notificações nas configurações.');
+        showToast('Permita notificações nas configurações.');
       }
     }
 
     if ('Notification' in window && Notification.permission === 'granted') {
-      const btn = document.getElementById('notif-btn');
-      if (btn) { btn.textContent = '🔔 Lembretes ativos'; btn.style.cssText += ';background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.4);color:#4ade80'; }
+      agendarLembretes();
+      var btn = document.getElementById('notif-btn');
+      if (btn) { btn.textContent = '✅ Lembretes ativos'; btn.style.background = 'rgba(34,197,94,.15)'; btn.style.borderColor = 'rgba(34,197,94,.4)'; btn.style.color = '#4ade80'; }
     }
+
+    // ── PWA INSTALL ──
+    var deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('install-btn').style.display = 'flex';
+    });
+    window.addEventListener('appinstalled', function () {
+      document.getElementById('install-btn').style.display = 'none';
+      deferredPrompt = null;
+      showToast('✅ App instalado!');
+    });
+    function installApp() {
+      if (!deferredPrompt) { showToast('Abra no Chrome e use "Adicionar à tela inicial"'); return; }
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(function () { deferredPrompt = null; });
+    }
+
+    // ── ACADEMIA TRACKER ──
+    function getWeekKey() {
+      var d = new Date();
+      var jan1 = new Date(d.getFullYear(), 0, 1);
+      var week = Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
+      return d.getFullYear() + '-W' + week;
+    }
+
+    function setGymDone(el, done) {
+      var chk = el.querySelector('.gym-check');
+      if (done) {
+        el.style.background = 'rgba(249,115,22,.15)';
+        el.style.borderColor = 'rgba(249,115,22,.5)';
+        chk.style.background = '#f97316';
+        chk.style.borderColor = '#f97316';
+        chk.textContent = '✓';
+        el.dataset.done = 'true';
+      } else {
+        el.style.background = 'var(--s2)';
+        el.style.borderColor = 'var(--border2)';
+        chk.style.background = 'transparent';
+        chk.style.borderColor = 'var(--border2)';
+        chk.textContent = '';
+        el.dataset.done = 'false';
+      }
+    }
+
+    function toggleGym(el, day) {
+      var isDone = el.dataset.done === 'true';
+      setGymDone(el, !isDone);
+      saveGym();
+      updateGymStreak();
+    }
+
+    function saveGym() {
+      var data = {};
+      document.querySelectorAll('#gym-days > div').forEach(function (el) {
+        data[el.dataset.day] = el.dataset.done === 'true';
+      });
+      try { localStorage.setItem(getWeekKey(), JSON.stringify(data)); } catch (e) { }
+    }
+
+    function loadGym() {
+      try {
+        var data = JSON.parse(localStorage.getItem(getWeekKey()) || '{}');
+        document.querySelectorAll('#gym-days > div').forEach(function (el) {
+          if (data[el.dataset.day]) setGymDone(el, true);
+        });
+        updateGymStreak();
+      } catch (e) { }
+    }
+
+    function updateGymStreak() {
+      var count = 0;
+      document.querySelectorAll('#gym-days > div').forEach(function (el) {
+        if (el.dataset.done === 'true') count++;
+      });
+      var streak = document.getElementById('gym-streak');
+      var msg = document.getElementById('gym-msg');
+      if (streak) {
+        streak.textContent = count + '/7';
+        streak.style.color = count === 7 ? '#4ade80' : count >= 5 ? '#fbbf24' : '#fb923c';
+      }
+      if (msg) {
+        if (count === 0) msg.textContent = 'Toque nos dias que treinou 💪';
+        else if (count < 3) msg.textContent = 'Bom começo! Continua. 🔥';
+        else if (count < 5) msg.textContent = 'Na metade! Tá indo bem. 💪';
+        else if (count < 7) msg.textContent = 'Quase semana cheia! Falta pouco! 🚀';
+        else msg.textContent = '🏆 Semana cheia! Você é fera, Cesar!';
+      }
+    }
+
+    function resetGym() {
+      document.querySelectorAll('#gym-days > div').forEach(function (el) {
+        setGymDone(el, false);
+      });
+      saveGym();
+      updateGymStreak();
+    }
+
+    loadGym();
   </script>
 </body>
 
