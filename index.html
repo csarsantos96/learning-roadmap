@@ -1,0 +1,2256 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planner — Cesar Santos</title>
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#7c6dfa">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Planner">
+  <link rel="apple-touch-icon"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%230d0d14' rx='40'/%3E%3Ctext x='96' y='130' font-size='100' text-anchor='middle'%3E🎯%3C/text%3E%3C/svg%3E">
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Barlow+Condensed:wght@700;900&family=Barlow:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07070f;
+      --s1: #0d0d1a;
+      --s2: #111120;
+      --border: #1e1e32;
+      --border2: #28284a;
+      --text: #c8c8e0;
+      --muted: #484868;
+      --bright: #eeeeff;
+      --pick: #6366f1;
+      --pos: #ef4444;
+      --alemao: #22c55e;
+      --ingles: #0ea5e9;
+      --eda: #f97316;
+      --redes: #a855f7;
+      --aws: #f59e0b;
+      --python: #3b82f6;
+      --gold: #fbbf24;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Barlow', sans-serif;
+      padding-bottom: 80px;
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      background: rgba(7, 7, 15, .97);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .nav::-webkit-scrollbar {
+      display: none;
+    }
+
+    .nav-tab {
+      flex-shrink: 0;
+      padding: 12px 13px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1px;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all .2s;
+      white-space: nowrap;
+    }
+
+    .nav-tab.active {
+      color: var(--bright);
+      border-bottom-color: var(--alemao);
+    }
+
+    .panel {
+      display: none;
+    }
+
+    .panel.active {
+      display: block;
+    }
+
+    .hero {
+      padding: 32px 20px 24px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 15% 50%, rgba(99, 102, 241, .07) 0%, transparent 60%), radial-gradient(ellipse 80% 60% at 85% 50%, rgba(34, 197, 94, .07) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .hero-eye {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 4px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .hero-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 52px;
+      font-weight: 900;
+      letter-spacing: -2px;
+      line-height: .9;
+      color: var(--bright);
+    }
+
+    .hero-title .g {
+      color: var(--alemao);
+    }
+
+    .hero-sub {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 10px;
+      line-height: 1.7;
+    }
+
+    .hero-goal {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 14px;
+      background: rgba(251, 191, 36, .07);
+      border: 1px solid rgba(251, 191, 36, .25);
+      border-radius: 100px;
+      padding: 7px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--gold);
+      font-family: 'Barlow Condensed', sans-serif;
+    }
+
+    .pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+      margin-top: 12px;
+    }
+
+    .pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    .pill-r {
+      background: rgba(239, 68, 68, .08);
+      border: 1px solid rgba(239, 68, 68, .3);
+      color: #f87171;
+    }
+
+    .pill-g {
+      background: rgba(34, 197, 94, .08);
+      border: 1px solid rgba(34, 197, 94, .3);
+      color: #4ade80;
+    }
+
+    .pill-b {
+      background: rgba(99, 102, 241, .08);
+      border: 1px solid rgba(99, 102, 241, .3);
+      color: #818cf8;
+    }
+
+    .pill-a {
+      background: rgba(245, 158, 11, .08);
+      border: 1px solid rgba(245, 158, 11, .3);
+      color: #fbbf24;
+    }
+
+    .dot-p {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: .3;
+        transform: scale(.6);
+      }
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    .t-pick {
+      background: rgba(99, 102, 241, .1);
+      color: #818cf8;
+      border: 1px solid rgba(99, 102, 241, .25);
+    }
+
+    .t-pos {
+      background: rgba(239, 68, 68, .1);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, .25);
+    }
+
+    .t-alemao {
+      background: rgba(34, 197, 94, .1);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, .25);
+    }
+
+    .t-ingles {
+      background: rgba(14, 165, 233, .1);
+      color: #38bdf8;
+      border: 1px solid rgba(14, 165, 233, .25);
+    }
+
+    .t-eda {
+      background: rgba(249, 115, 22, .1);
+      color: #fb923c;
+      border: 1px solid rgba(249, 115, 22, .25);
+    }
+
+    .t-redes {
+      background: rgba(168, 85, 247, .1);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, .25);
+    }
+
+    .t-aws {
+      background: rgba(245, 158, 11, .1);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, .25);
+    }
+
+    .t-python {
+      background: rgba(59, 130, 246, .1);
+      color: #93c5fd;
+      border: 1px solid rgba(59, 130, 246, .25);
+    }
+
+    .t-fixo {
+      background: rgba(251, 191, 36, .07);
+      color: #fbbf24;
+      border: 1px solid rgba(251, 191, 36, .2);
+    }
+
+    .t-rest {
+      background: rgba(107, 114, 128, .1);
+      color: #9ca3af;
+      border: 1px solid rgba(107, 114, 128, .25);
+    }
+
+    .t-proj {
+      background: rgba(34, 197, 94, .08);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, .2);
+    }
+
+    .section {
+      padding: 18px 16px;
+    }
+
+    .sec-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 3px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      margin-top: 24px;
+    }
+
+    .sec-label:first-child {
+      margin-top: 0;
+    }
+
+    .phase-card {
+      background: var(--s1);
+      border: 1px solid var(--border2);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .phase-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .phase-header::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+    }
+
+    .ph-pick::before {
+      background: var(--pick);
+    }
+
+    .ph-eda::before {
+      background: var(--eda);
+    }
+
+    .ph-aws::before {
+      background: var(--aws);
+    }
+
+    .ph-python::before {
+      background: var(--python);
+    }
+
+    .ph-final::before {
+      background: var(--alemao);
+    }
+
+    .phase-num {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 2px;
+      margin-bottom: 4px;
+    }
+
+    .phase-name {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--bright);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .phase-dates {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .phase-body {
+      padding: 14px 16px;
+    }
+
+    .agenda-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .agenda-day {
+      display: flex;
+      gap: 8px;
+      background: var(--s2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    .ad-day {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px;
+      color: var(--muted);
+      min-width: 26px;
+      text-align: center;
+      text-transform: uppercase;
+      padding-top: 2px;
+      line-height: 1.4;
+      flex-shrink: 0;
+    }
+
+    .ad-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .ad-block {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    .ad-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--bright);
+    }
+
+    .ad-note {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      padding-left: 4px;
+      line-height: 1.4;
+    }
+
+    .checklist {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--s2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      cursor: pointer;
+    }
+
+    .check-item.done {
+      opacity: .5;
+    }
+
+    .check-item.done .check-label {
+      text-decoration: line-through;
+      color: var(--muted);
+    }
+
+    .check-box {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      border: 2px solid var(--border2);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .check-item.done .check-box {
+      background: var(--alemao);
+      border-color: var(--alemao);
+    }
+
+    .check-inner {
+      display: none;
+      color: #000;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .check-item.done .check-inner {
+      display: block;
+    }
+
+    .check-label {
+      font-size: 12px;
+      color: var(--bright);
+      flex: 1;
+      line-height: 1.3;
+    }
+
+    .check-sub {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .projects {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .project-card {
+      background: rgba(34, 197, 94, .04);
+      border: 1px solid rgba(34, 197, 94, .15);
+      border-radius: 10px;
+      padding: 14px;
+    }
+
+    .proj-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .proj-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--bright);
+    }
+
+    .proj-stack {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 6px;
+    }
+
+    .proj-desc {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .proj-impact {
+      margin-top: 6px;
+      font-size: 11px;
+      color: #4ade80;
+      font-weight: 700;
+    }
+
+    .day-card {
+      background: var(--s1);
+      border: 1px solid var(--border2);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .day-hd {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .day-name {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--bright);
+    }
+
+    .day-vibe {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px;
+      color: var(--muted);
+    }
+
+    .day-body {
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .blk {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .blk-t {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      min-width: 36px;
+      padding-top: 2px;
+      flex-shrink: 0;
+    }
+
+    .blk-c {
+      flex: 1;
+    }
+
+    .blk-top {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-wrap: wrap;
+      margin-bottom: 2px;
+    }
+
+    .blk-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--bright);
+      line-height: 1.3;
+    }
+
+    .blk-note {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .blk-sep {
+      height: 1px;
+      background: var(--border);
+      opacity: .4;
+    }
+
+    .rest-banner {
+      background: rgba(107, 114, 128, .05);
+      border: 1px solid rgba(107, 114, 128, .15);
+      border-radius: 14px;
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .rest-ico {
+      font-size: 30px;
+    }
+
+    .rest-msg {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .rules {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .rule {
+      background: var(--s1);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      padding: 13px;
+    }
+
+    .rule-ico {
+      font-size: 18px;
+      margin-bottom: 7px;
+    }
+
+    .rule-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--bright);
+      margin-bottom: 3px;
+    }
+
+    .rule-txt {
+      font-size: 10px;
+      color: var(--muted);
+      line-height: 1.5;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .pt-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .pt-stat {
+      background: var(--s2);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .pt-num {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .pt-lbl {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .pt-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .pt-rl {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      min-width: 80px;
+    }
+
+    .pt-bw {
+      flex: 1;
+      background: var(--border2);
+      border-radius: 100px;
+      height: 6px;
+      overflow: hidden;
+    }
+
+    .pt-b {
+      height: 100%;
+      border-radius: 100px;
+      background: var(--pick);
+    }
+
+    .pt-rv {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: var(--bright);
+      min-width: 50px;
+      text-align: right;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- TOAST -->
+  <div id="toast"
+    style="position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:#1e1e32;border:1px solid #28284a;color:#eeeeff;padding:10px 18px;border-radius:100px;font-family:monospace;font-size:11px;z-index:9999;opacity:0;transition:all .3s;white-space:nowrap;max-width:90vw;text-align:center;pointer-events:none;">
+  </div>
+  <!-- NAV TABS -->
+  <nav class="nav" style="position:sticky;top:0;z-index:500;">
+    <div class="nav-tab active" onclick="show('home',this)">🏠 Início</div>
+    <div class="nav-tab" onclick="show('fase1',this)">⚡ Fase 1</div>
+    <div class="nav-tab" onclick="show('fase2',this)">🧱 Fase 2</div>
+    <div class="nav-tab" onclick="show('fase3',this)">☁️ Fase 3</div>
+    <div class="nav-tab" onclick="show('fase4',this)">🐍 Fase 4</div>
+    <div class="nav-tab" onclick="show('semana',this)">📅 Semana</div>
+    <div class="nav-tab" onclick="show('regras',this)">⚡ Regras</div>
+    <div class="nav-tab" onclick="show('pick',this)">🐳 PICK</div>
+  </nav>
+  <!-- BOTTOM BAR -->
+  <div
+    style="position:fixed;bottom:0;left:0;right:0;z-index:400;background:rgba(7,7,15,.97);backdrop-filter:blur(12px);border-top:1px solid #1e1e32;padding:10px 16px;display:flex;gap:8px;">
+    <button id="notif-btn" onclick="ativarNotificacoes()"
+      style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.25);border-radius:10px;color:#818cf8;font-family:monospace;font-size:10px;cursor:pointer;font-weight:700;">🔔
+      Ativar lembretes</button>
+    <button id="install-btn" onclick="installApp()"
+      style="display:none;flex:1;align-items:center;justify-content:center;gap:6px;padding:10px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);border-radius:10px;color:#4ade80;font-family:monospace;font-size:10px;cursor:pointer;font-weight:700;">📲
+      Instalar app</button>
+  </div>
+
+  <!-- HOME -->
+  <div id="home" class="panel active">
+    <div class="hero">
+      <div class="hero-eye">PLANO DE ESTUDOS PESSOAL</div>
+      <div class="hero-title">CESAR<span class="g">'S</span><br>ROAD<span class="g">MAP</span></div>
+      <div class="hero-sub">Abr → Dez 2025 · 18h–22h seg–sex · sáb 15h–20h<br>Academia 5h30 · Trabalho 7h–16h · Domingo
+        sagrado</div>
+      <div class="hero-goal">🎯 Alemanha ou $5k+/mês remoto — 2026</div>
+      <div class="pills">
+        <div class="pill pill-r">
+          <div class="dot-p" style="background:#ef4444"></div>Pós FIAP challenge: 25/MAI
+        </div>
+        <div class="pill pill-b">
+          <div class="dot-p" style="background:#6366f1"></div>PICK: contínuo até mar/27
+        </div>
+        <div class="pill pill-g">
+          <div class="dot-p" style="background:#22c55e"></div>Alemão: todo dia + sáb 12h
+        </div>
+        <div class="pill pill-a">
+          <div class="dot-p" style="background:#f59e0b"></div>AWS Treina: jun em diante
+        </div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="sec-label">// visão geral · 4 fases + encerramento</div>
+      <div class="phase-card">
+        <div class="phase-header ph-pick">
+          <div class="phase-num">FASE 01 · ABR 20 → MAI 25</div>
+          <div class="phase-name">⚡ Deadline Sprint</div>
+          <div class="phase-dates">Entregar challenge Pós FIAP · Recuperar atraso PICK · Redes essencial · Alemão +
+            Inglês todo dia</div>
+        </div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-header ph-eda">
+          <div class="phase-num">FASE 02 · JUN → JUL</div>
+          <div class="phase-name">🧱 Base Técnica</div>
+          <div class="phase-dates">EDA/C profundo · Redes completo · AWS Treina começa · PICK ritmo · Alemão + Inglês
+          </div>
+        </div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-header ph-aws">
+          <div class="phase-num">FASE 03 · AGO → SET</div>
+          <div class="phase-name">☁️ Cloud + Certificação</div>
+          <div class="phase-dates">AWS Cloud Practitioner · EDA projetos · Inglês avançado · Alemão B1 · PICK</div>
+        </div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-header ph-python">
+          <div class="phase-num">FASE 04 · OUT → NOV</div>
+          <div class="phase-name">🐍 Python + Java</div>
+          <div class="phase-dates">Python automação · Java OOP · Portfolio + LinkedIn · Alemão entrevista · PICK</div>
+        </div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-header ph-final">
+          <div class="phase-num">ENCERRAMENTO · DEZ 1 → 25</div>
+          <div class="phase-name">🎄 Super Projeto + Natal</div>
+          <div class="phase-dates">SecureOps Platform — projeto final integrando tudo · 25/dez: plano encerra</div>
+        </div>
+      </div>
+      <div class="sec-label">// instalar + notificações</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px;">
+        <button onclick="ativarNotificacoes()"
+          style="width:100%;padding:14px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:12px;color:#4ade80;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+          🔔 Ativar lembretes de estudo
+        </button>
+        <div id="install-btn" style="display:none;">
+          <button onclick="installApp()"
+            style="width:100%;padding:14px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.3);border-radius:12px;color:#818cf8;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+            📲 Instalar app no celular
+          </button>
+        </div>
+        <div
+          style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);text-align:center;line-height:1.5;">
+          Lembretes: 17h50 · 21h25 · 21h55 todo dia<br>
+          Quinta 5h45 (Daily) · Sábado 11h45 (Alemão)
+        </div>
+      </div>
+      <div class="sec-label">// regras que nunca quebram</div>
+      <div class="rules">
+        <div class="rule">
+          <div class="rule-ico">🇩🇪</div>
+          <div class="rule-title">Alemão todo dia</div>
+          <div class="rule-txt">30min às 21h30. Imóvel. Porta pra Alemanha.</div>
+        </div>
+        <div class="rule">
+          <div class="rule-ico">⛪</div>
+          <div class="rule-title">Domingo sagrado</div>
+          <div class="rule-txt">Igreja + família. Zero estudo. Sem culpa.</div>
+        </div>
+        <div class="rule">
+          <div class="rule-ico">🍺</div>
+          <div class="rule-title">1–2 folgas/mês</div>
+          <div class="rule-txt">Amigos, tio, fazenda. O plano absorve.</div>
+        </div>
+        <div class="rule">
+          <div class="rule-ico">💆</div>
+          <div class="rule-title">Sexta é leve</div>
+          <div class="rule-txt">Pouco conteúdo. Livre a partir das 20h.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FASE 1 -->
+  <div id="fase1" class="panel">
+    <div class="section">
+      <div class="phase-card">
+        <div class="phase-header ph-pick">
+          <div class="phase-num">FASE 01 · ABR 20 → MAI 25 · 5 SEMANAS</div>
+          <div class="phase-name">⚡ Deadline Sprint</div>
+          <div class="phase-dates">Prioridade: challenge Pós FIAP até 25/mai · PICK 3 vídeos/dia · Alemão e Inglês todos
+            os dias</div>
+        </div>
+      </div>
+      <div class="sec-label">// agenda semanal fase 1</div>
+      <div class="agenda-grid">
+        <div class="agenda-day">
+          <div class="ad-day">SEG</div>
+          <div class="ad-content">
+            <div class="ad-block"><span class="tag t-ingles">18h</span><span class="ad-title">Inglês ao vivo — fixo
+                40min</span></div>
+            <div class="ad-block"><span class="tag t-pick">18h45</span><span class="ad-title">PICK — 3 vídeos
+                Docker/K8s</span></div>
+            <div class="ad-block"><span class="tag t-pos">20h30</span><span class="ad-title">Pós FIAP —
+                leitura/exercício</span></div>
+            <div class="ad-block"><span class="tag t-alemao">21h30</span><span class="ad-title">Alemão 30min</span>
+            </div>
+          </div>
+        </div>
+        <div class="agenda-day">
+          <div class="ad-day">TER</div>
+          <div class="ad-content">
+            <div class="ad-block"><span class="tag t-pick">18h</span><span class="ad-title">PICK — 3–4 vídeos (foco
+                total)</span></div>
+            <div class="ad-block"><span class="tag t-redes">20h</span><span class="ad-title">Redes essencial — TCP/IP,
+                portas, scanning</span></div>
+            <div class="ad-note">Base obrigatória pro challenge pentest</div>
+            <div class="ad-block"><span class="tag t-ingles">21h</span><span class="ad-title">Inglês passivo — série
+                30min</span></div>
+            <div class="ad-block"><span class="tag t-alemao">21h30</span><span class="ad-title">Alemão 30min</span>
+            </div>
+          </div>
+        </div>
+        <div class="agenda-day">
+          <div class="ad-day">QUA</div>
+          <div class="ad-content">
+            <div class="ad-block"><span class="tag t-ingles">18h</span><span class="ad-title">Inglês ao vivo — fixo
+                40min</span></div>
+            <div class="ad-block"><span class="tag t-pos">18h45</span><span class="ad-title">Pós FIAP — challenge Buffer
+                Overflow</span></div>
+            <div class="ad-note">A partir 30/abr: challenge é prioridade 1</div>
+            <div class="ad-block"><span class="tag t-alemao">21h</span><span class="ad-title">Alemão 30–40min (ciclo
+                qui–sáb)</span></div>
+          </div>
+        </div>
+        <div class="agenda-day">
+          <div class="ad-day">QUI</div>
+          <div class="ad-content">
+            <div class="ad-block"><span class="tag t-fixo">06h</span><span class="ad-title">Daily Discord — Jefferson
+                15min (fixo até mar/26)</span></div>
+            <div class="ad-block"><span class="tag t-fixo">18h</span><span class="ad-title">Red Team FIAP Zoom
+                18h–19h50</span></div>
+            <div class="ad-block"><span class="tag t-pick">20h</span><span class="ad-title">PICK — 2 vídeos</span></div>
+            <div class="ad-block"><span class="tag t-alemao">21h30</span><span class="ad-title">Alemão 30min</span>
+            </div>
+          </div>
+        </div>
+        <div class="agenda-day">
+          <div class="ad-day">SEX<br />LEVE</div>
+          <div class="ad-content">
+            <div class="ad-block"><span class="tag t-pick">18h</span><span class="ad-title">PICK — 1 vídeo só</span>
+            </div>
+            <div class="ad-block"><span class="tag t-ingles">19h</span><span class="ad-title">Série/YouTube em inglês —
+                lazer</span></div>
+            <div class="ad-block"><span class="tag t-rest">20h</span><span class="ad-title">Tempo livre — sexta é
+                sua</span></div>
+            <div class="ad-block"><span class="tag t-alemao">21h30</span><span class="ad-title">Alemão 20–30min</span>
+            </div>
+          </div>
+        </div>
+        <div class="agenda-day">
+          <div class="ad-day">SAB</div>
+          <div class="ad-content">
+            <div class="ad-block"><span class="tag t-fixo">7h ou 9h</span><span class="ad-title">PICK ao vivo — confirma
+                horário no email</span></div>
+            <div class="ad-block"><span class="tag t-fixo">12h</span><span class="ad-title">Alemão ao vivo com
+                professor</span></div>
+            <div class="ad-block"><span class="tag t-pos">15h</span><span class="ad-title">Pós FIAP — challenge ou
+                conteúdo</span></div>
+            <div class="ad-block"><span class="tag t-pick">18h</span><span class="ad-title">PICK — recuperação de
+                atraso</span></div>
+          </div>
+        </div>
+        <div class="agenda-day">
+          <div class="ad-day">DOM</div>
+          <div class="ad-content">
+            <div class="ad-block"><span class="tag t-rest">LIVRE</span><span class="ad-title">Igreja + família +
+                descanso — zero estudo</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="sec-label">// checklist fase 1</div>
+      <div class="checklist" id="cl1">
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">PICK Day 2 — Docker prático completo</div>
+            <div class="check-sub">Em andamento — terminar essa semana</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">PICK Day 3 — Distroless e Segurança</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">PICK Day 4 — Volumes</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">PICK Day 5 — Networks no Docker</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">PICK Day 6 — Docker Compose</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">Redes — TCP/IP, portas, scanning (base pentest)</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">Pós FIAP — última aula ao vivo 29/abr</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">Challenge — VM baixada e configurada</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">Challenge — exploit Buffer Overflow desenvolvido</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">🎯 Challenge Pós FIAP — ENTREGUE (25/mai)</div>
+          </div>
+        </div>
+      </div>
+      <div class="sec-label">// projetos de portfólio fase 1</div>
+      <div class="projects">
+        <div class="project-card">
+          <div class="proj-header">
+            <div class="proj-name">🐳 Pipeline Docker Seguro</div><span class="tag t-proj">PORTFÓLIO</span>
+          </div>
+          <div class="proj-stack"><span class="tag t-pick">Docker</span><span class="tag t-pick">Trivy</span><span
+              class="tag t-pick">GitHub Actions</span></div>
+          <div class="proj-desc">CI/CD que faz build, escaneia vulnerabilidades com Trivy e bloqueia deploy com CVEs
+            críticos. README em inglês.</div>
+          <div class="proj-impact">🎯 DevSecOps na prática — muito valorizado na Europa</div>
+        </div>
+        <div class="project-card">
+          <div class="proj-header">
+            <div class="proj-name">💀 Buffer Overflow Write-up</div><span class="tag t-proj">PORTFÓLIO</span>
+          </div>
+          <div class="proj-stack"><span class="tag t-pos">Red Team</span><span class="tag t-redes">Redes</span><span
+              class="tag t-pos">Pentest</span></div>
+          <div class="proj-desc">Documentação técnica completa do challenge da pós no formato CTF write-up. Publica no
+            GitHub e LinkedIn.</div>
+          <div class="proj-impact">🎯 Write-ups = melhor portfólio de segurança ofensiva</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FASE 2 -->
+  <div id="fase2" class="panel">
+    <div class="section">
+      <div class="phase-card">
+        <div class="phase-header ph-eda">
+          <div class="phase-num">FASE 02 · JUN → JUL · 2 MESES</div>
+          <div class="phase-name">🧱 Base Técnica</div>
+          <div class="phase-dates">EDA/C · Redes completo · AWS Treina começa · PICK 2–3 vídeos/dia · Alemão + Inglês
+          </div>
+        </div>
+      </div>
+      <div class="sec-label">// agenda semanal fase 2</div>
+      <div class="agenda-grid">
+        <div class="agenda-day">
+          <div class="ad-day">SEG</div>
+          <div class="ad-content">
+            <div class="ad-block"><span class="tag t-ingles">18h</span><span class="ad-title">Inglês ao vivo
+                40min</span></div>
+            <div class="ad-block"><span class="tag t-eda">18h45</span><span class="ad-title">EDA/C — listas, árvores,
+                grafos</span></div>
+            <div class="ad-block"><span class="tag t-pick">20h30</span><span class="ad-title">PICK — 2–3 vídeos
+                K8s</span></div>
+            <div class="ad-block"><span class="tag t-alemao">21h30</span><span class="ad-title">Alemão 30min</span>
+            </div>
+          </div>
+        </div>
+        <div class="agenda-day">
+          <div class="ad-day">TER</div>
+          <div class="ad-content">
+            <div class="ad-block"><span class="tag t-eda">18h</span><span class="ad-title">EDA/C — implementação em
+                C</span></div>
+            <div class="ad-block"><span class="tag t-aws">20h</span><span class="ad-title">AWS Treina Brasil — módulo do
+                dia</span></div>
+            <div class="ad-block"><span class="tag t-ingles">21h</span><span class="ad-title">Inglês passivo
+                30min</span></div>
+            <div class="ad-block"><span class="tag t-alemao">21h30</span><span class="ad-title">Alemão 30min</span>
+            </div>
+          </div>
+        </div>
+        <div class="agenda-day">
+          <div class="ad-day">QUA</div>
+          <div class="ad-content">
+            <div class="ad-block"><span class="tag t-ingles">18h</span><span class="ad-title">Inglês ao vivo
+                40min</span></div>
+            <div class="ad-block"><span class="tag t-redes">18h45</span><span class="ad-title">Redes — OSI, DNS, HTTP,
+                segurança</span></div>
+            <div class="ad-block"><span class="tag t-pick">20h30</span><span class="ad-title">PICK — 2 vídeos</span>
+            </div>
+            <div class="ad-block"><span class="tag t-alemao">21h30</span><span class="ad-title">Alemão 30–40min</span>
+            </div>
+          </div>
+        </div>
+        <div class="agenda-day">
+          <div class="ad-day">QUI</div>
+          <div class="ad-content">
+            <div class="ad-block"><span class="tag t-fixo">06h</span><span class="ad-title">Daily Discord — Jefferson
+                15min</span></div>
+            <div class="ad-block"><span class="tag t-eda">18h</span><span class="ad-title">EDA/C — projeto
+                prático</span></div>
+            <div class="ad-block"><span class="tag t-pick">20h</span><span class="ad-title">PICK — 2 vídeos K8s</span>
+            </div>
+            <div class="ad-block"><span class="tag t-alemao">21h30</span><span class="ad-title">Alemão 30min</span>
+            </div>
+          </div>
+        </div>
+        <div class="agenda-day">
+          <div class="ad-day">SEX<br />LEVE</div>
+          <div class="ad-content">
+            <div class="ad-block"><span class="tag t-redes">18h</span><span class="ad-title">Redes — revisão leve</span>
+            </div>
+            <div class="ad-block"><span class="tag t-ingles">19h</span><span class="ad-title">Inglês —
+                entretenimento</span></div>
+            <div class="ad-block"><span class="tag t-rest">20h</span><span class="ad-title">Livre</span></div>
+            <div class="ad-block"><span class="tag t-alemao">21h30</span><span class="ad-title">Alemão 20min</span>
+            </div>
+          </div>
+        </div>
+        <div class="agenda-day">
+          <div class="ad-day">SAB</div>
+          <div class="ad-content">
+            <div class="ad-block"><span class="tag t-fixo">7h ou 9h</span><span class="ad-title">PICK ao vivo — confirma
+                no email</span></div>
+            <div class="ad-block"><span class="tag t-fixo">12h</span><span class="ad-title">Alemão ao vivo com
+                professor</span></div>
+            <div class="ad-block"><span class="tag t-eda">15h</span><span class="ad-title">EDA/C — projeto +
+                GitHub</span></div>
+            <div class="ad-block"><span class="tag t-aws">18h</span><span class="ad-title">AWS Treina — módulo</span>
+            </div>
+          </div>
+        </div>
+        <div class="agenda-day">
+          <div class="ad-day">DOM</div>
+          <div class="ad-content">
+            <div class="ad-block"><span class="tag t-rest">LIVRE</span><span class="ad-title">Igreja + família +
+                descanso</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="sec-label">// checklist fase 2</div>
+      <div class="checklist" id="cl2">
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">EDA — Listas encadeadas simples e dupla em C</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">EDA — Árvores Binárias BST completas em C</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">EDA — Grafos BFS + DFS em C</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">Redes — OSI + TCP/IP completo</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">Redes — DNS, HTTP/S, TLS</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">Redes — Segurança: firewalls, VPN, IDS</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">AWS Treina — fundamentos cloud iniciados</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">PICK — Kubernetes Days 1–4 completos</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">Alemão — A2 consolidado (avaliação jul)</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">🏖️ Jul — 1 semana de folga real merecida</div>
+          </div>
+        </div>
+      </div>
+      <div class="sec-label">// projetos de portfólio fase 2</div>
+      <div class="projects">
+        <div class="project-card">
+          <div class="proj-header">
+            <div class="proj-name">⛓️ Scanner de Hosts em C</div><span class="tag t-proj">PORTFÓLIO</span>
+          </div>
+          <div class="proj-stack"><span class="tag t-eda">C</span><span class="tag t-eda">Lista Encadeada</span><span
+              class="tag t-redes">Redes</span></div>
+          <div class="proj-desc">Scanner que usa lista encadeada pra armazenar hosts, verifica portas abertas e gera
+            relatório. EDA + Redes num projeto real.</div>
+          <div class="proj-impact">🎯 C + estruturas + redes — combo raro no portfólio</div>
+        </div>
+        <div class="project-card">
+          <div class="proj-header">
+            <div class="proj-name">🌐 Mapa de Rede com Grafos</div><span class="tag t-proj">PORTFÓLIO</span>
+          </div>
+          <div class="proj-stack"><span class="tag t-eda">Grafos C</span><span class="tag t-redes">Topologia</span>
+          </div>
+          <div class="proj-desc">Mapeia topologia de rede usando grafos. Mostra caminho mais curto entre hosts com
+            Dijkstra.</div>
+          <div class="proj-impact">🎯 Algoritmos clássicos aplicados em segurança real</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FASE 3 -->
+  <div id="fase3" class="panel">
+    <div class="section">
+      <div class="phase-card">
+        <div class="phase-header ph-aws">
+          <div class="phase-num">FASE 03 · AGO → SET · 2 MESES</div>
+          <div class="phase-name">☁️ Cloud + Certificação AWS</div>
+          <div class="phase-dates">AWS Cloud Practitioner · EDA projetos · Inglês avançado · Alemão B1 · PICK</div>
+        </div>
+      </div>
+      <div class="sec-label">// agenda semanal fase 3</div>
+      <div class="agenda-grid">
+        <div class="agenda-day">
+          <div class="ad-day">SEG</div>
+          <div class="ad-content">
+            <div class="ad-block"><span class="tag t-ingles">18h</span><span class="ad-title">Inglês ao vivo + mock
+                interview técnica</span></div>
+            <div class="ad-block"><span class="tag t-aws">18h45</span><span class="ad-title">AWS — Cloud
+                Practitioner</span></div>
+            <div class="ad-block"><span class="tag t-pick">21h</span><span class="ad-title">PICK — 2 vídeos
+                K8s/CKS</span></div>
+            <div class="ad-block"><span class="tag t-alemao">21h30</span><span class="ad-title">Alemão 30min —
+                vocabulário TI</span></div>
+          </div>
+        </div>
+        <div class="agenda-day">
+          <div class="ad-day">TER</div>
+          <div class="ad-content">
+            <div class="ad-block"><span class="tag t-aws">18h</span><span class="ad-title">AWS — simulados e labs</span>
+            </div>
+            <div class="ad-block"><span class="tag t-eda">20h</span><span class="ad-title">EDA — projeto
+                portfólio</span></div>
+            <div class="ad-block"><span class="tag t-ingles">21h</span><span class="ad-title">Inglês passivo
+                30min</span></div>
+            <div class="ad-block"><span class="tag t-alemao">21h30</span><span class="ad-title">Alemão 30min</span>
+            </div>
+          </div>
+        </div>
+        <div class="agenda-day">
+          <div class="ad-day">QUA</div>
+          <div class="ad-content">
+            <div class="ad-block"><span class="tag t-ingles">18h</span><span class="ad-title">Inglês ao vivo — foco
+                conversação</span></div>
+            <div class="ad-block"><span class="tag t-aws">18h45</span><span class="ad-title">AWS — EC2, S3, VPC,
+                IAM</span></div>
+            <div class="ad-block"><span class="tag t-pick">21h</span><span class="ad-title">PICK — 2 vídeos</span></div>
+            <div class="ad-block"><span class="tag t-alemao">21h30</span><span class="ad-title">Alemão 30min</span>
+            </div>
+          </div>
+        </div>
+        <div class="agenda-day">
+          <div class="ad-day">QUI</div>
+          <div class="ad-content">
+            <div class="ad-block"><span class="tag t-fixo">06h</span><span class="ad-title">Daily Discord — Jefferson
+                15min</span></div>
+            <div class="ad-block"><span class="tag t-aws">18h</span><span class="ad-title">AWS — simulado
+                completo</span></div>
+            <div class="ad-block"><span class="tag t-pick">20h</span><span class="ad-title">PICK — 2 vídeos</span></div>
+            <div class="ad-block"><span class="tag t-alemao">21h30</span><span class="ad-title">Alemão — conversação
+                técnica</span></div>
+          </div>
+        </div>
+        <div class="agenda-day">
+          <div class="ad-day">SEX<br />LEVE</div>
+          <div class="ad-content">
+            <div class="ad-block"><span class="tag t-aws">18h</span><span class="ad-title">AWS — revisão leve 1
+                tópico</span></div>
+            <div class="ad-block"><span class="tag t-ingles">19h</span><span class="ad-title">Inglês —
+                entretenimento</span></div>
+            <div class="ad-block"><span class="tag t-rest">20h</span><span class="ad-title">Livre</span></div>
+            <div class="ad-block"><span class="tag t-alemao">21h30</span><span class="ad-title">Alemão 20min</span>
+            </div>
+          </div>
+        </div>
+        <div class="agenda-day">
+          <div class="ad-day">SAB</div>
+          <div class="ad-content">
+            <div class="ad-block"><span class="tag t-fixo">7h ou 9h</span><span class="ad-title">PICK ao vivo</span>
+            </div>
+            <div class="ad-block"><span class="tag t-fixo">12h</span><span class="ad-title">Alemão ao vivo com
+                professor</span></div>
+            <div class="ad-block"><span class="tag t-aws">15h</span><span class="ad-title">AWS — labs práticos +
+                portfólio</span></div>
+          </div>
+        </div>
+        <div class="agenda-day">
+          <div class="ad-day">DOM</div>
+          <div class="ad-content">
+            <div class="ad-block"><span class="tag t-rest">LIVRE</span><span class="ad-title">Igreja + família +
+                descanso</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="sec-label">// checklist fase 3</div>
+      <div class="checklist" id="cl3">
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">AWS — EC2, S3, VPC, IAM dominados</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">AWS — RDS, Lambda, CloudWatch</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">🎯 AWS Cloud Practitioner — APROVADO</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">PICK — Kubernetes Days 5–8 completos</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">Inglês — mock interview técnica em inglês</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">Alemão — B1 · vocabulário TI em alemão</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">LinkedIn atualizado em inglês e alemão</div>
+          </div>
+        </div>
+      </div>
+      <div class="sec-label">// projeto portfólio fase 3</div>
+      <div class="projects">
+        <div class="project-card">
+          <div class="proj-header">
+            <div class="proj-name">☁️ Infra Segura na AWS</div><span class="tag t-proj">PORTFÓLIO</span>
+          </div>
+          <div class="proj-stack"><span class="tag t-aws">AWS</span><span class="tag t-aws">Terraform</span><span
+              class="tag t-pick">Docker</span><span class="tag t-pick">K8s</span></div>
+          <div class="proj-desc">Deploy de app containerizada na AWS com VPC privada, IAM least privilege, CloudWatch e
+            CI/CD com scan de vulnerabilidades.</div>
+          <div class="proj-impact">🎯 DevSecOps cloud — exatamente o que empresas europeias buscam</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FASE 4 -->
+  <div id="fase4" class="panel">
+    <div class="section">
+      <div class="phase-card">
+        <div class="phase-header ph-python">
+          <div class="phase-num">FASE 04 · OUT → NOV · 2 MESES</div>
+          <div class="phase-name">🐍 Python + Java + Portfolio</div>
+          <div class="phase-dates">Python automação · Java OOP · Portfolio completo · Alemão entrevista · PICK · Inglês
+          </div>
+        </div>
+      </div>
+      <div class="sec-label">// agenda semanal fase 4</div>
+      <div class="agenda-grid">
+        <div class="agenda-day">
+          <div class="ad-day">SEG</div>
+          <div class="ad-content">
+            <div class="ad-block"><span class="tag t-ingles">18h</span><span class="ad-title">Inglês ao vivo</span>
+            </div>
+            <div class="ad-block"><span class="tag t-python">18h45</span><span class="ad-title">Python — scripts,
+                automação, segurança</span></div>
+            <div class="ad-block"><span class="tag t-pick">21h</span><span class="ad-title">PICK — 2 vídeos</span></div>
+            <div class="ad-block"><span class="tag t-alemao">21h30</span><span class="ad-title">Alemão — prep entrevista
+                técnica</span></div>
+          </div>
+        </div>
+        <div class="agenda-day">
+          <div class="ad-day">TER</div>
+          <div class="ad-content">
+            <div class="ad-block"><span class="tag t-python">18h</span><span class="ad-title">Python — projeto
+                prático</span></div>
+            <div class="ad-block"><span class="tag t-python">20h</span><span class="ad-title">Java — OOP,
+                estruturas</span></div>
+            <div class="ad-block"><span class="tag t-ingles">21h</span><span class="ad-title">Inglês passivo
+                30min</span></div>
+            <div class="ad-block"><span class="tag t-alemao">21h30</span><span class="ad-title">Alemão 30min</span>
+            </div>
+          </div>
+        </div>
+        <div class="agenda-day">
+          <div class="ad-day">QUA</div>
+          <div class="ad-content">
+            <div class="ad-block"><span class="tag t-ingles">18h</span><span class="ad-title">Inglês ao vivo</span>
+            </div>
+            <div class="ad-block"><span class="tag t-python">18h45</span><span class="ad-title">Java — Spring
+                básico</span></div>
+            <div class="ad-block"><span class="tag t-pick">21h</span><span class="ad-title">PICK — 2 vídeos</span></div>
+            <div class="ad-block"><span class="tag t-alemao">21h30</span><span class="ad-title">Alemão — simulação
+                entrevista</span></div>
+          </div>
+        </div>
+        <div class="agenda-day">
+          <div class="ad-day">QUI</div>
+          <div class="ad-content">
+            <div class="ad-block"><span class="tag t-fixo">06h</span><span class="ad-title">Daily Discord — Jefferson
+                15min</span></div>
+            <div class="ad-block"><span class="tag t-python">18h</span><span class="ad-title">Python/Java — super
+                projeto</span></div>
+            <div class="ad-block"><span class="tag t-pick">20h</span><span class="ad-title">PICK — 2 vídeos</span></div>
+            <div class="ad-block"><span class="tag t-alemao">21h30</span><span class="ad-title">Alemão 30min</span>
+            </div>
+          </div>
+        </div>
+        <div class="agenda-day">
+          <div class="ad-day">SEX<br />LEVE</div>
+          <div class="ad-content">
+            <div class="ad-block"><span class="tag t-python">18h</span><span class="ad-title">1 exercício Python ou
+                Java</span></div>
+            <div class="ad-block"><span class="tag t-ingles">19h</span><span class="ad-title">Inglês —
+                entretenimento</span></div>
+            <div class="ad-block"><span class="tag t-rest">20h</span><span class="ad-title">Livre</span></div>
+            <div class="ad-block"><span class="tag t-alemao">21h30</span><span class="ad-title">Alemão 20min</span>
+            </div>
+          </div>
+        </div>
+        <div class="agenda-day">
+          <div class="ad-day">SAB</div>
+          <div class="ad-content">
+            <div class="ad-block"><span class="tag t-fixo">7h ou 9h</span><span class="ad-title">PICK ao vivo</span>
+            </div>
+            <div class="ad-block"><span class="tag t-fixo">12h</span><span class="ad-title">Alemão ao vivo — simulação
+                entrevista</span></div>
+            <div class="ad-block"><span class="tag t-python">15h</span><span class="ad-title">Super projeto
+                SecureOps</span></div>
+          </div>
+        </div>
+        <div class="agenda-day">
+          <div class="ad-day">DOM</div>
+          <div class="ad-content">
+            <div class="ad-block"><span class="tag t-rest">LIVRE</span><span class="ad-title">Igreja + família +
+                descanso</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="sec-label">// checklist fase 4</div>
+      <div class="checklist" id="cl4">
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">Python — scripts de automação funcionando</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">Python — ferramentas de segurança (Scapy, requests)</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">Java — OOP dominado</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">Java — Spring Boot básico funcionando</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">PICK — Days 9–12 completos</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">Alemão — entrevista técnica simulada com professor</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">GitHub — 4+ projetos com README em inglês</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">LinkedIn em inglês + alemão — pronto pra candidaturas</div>
+          </div>
+        </div>
+      </div>
+      <div class="sec-label">// projetos portfólio fase 4</div>
+      <div class="projects">
+        <div class="project-card">
+          <div class="proj-header">
+            <div class="proj-name">🐍 Security Automation Toolkit</div><span class="tag t-proj">PORTFÓLIO</span>
+          </div>
+          <div class="proj-stack"><span class="tag t-python">Python</span><span class="tag t-redes">Redes</span><span
+              class="tag t-pos">Red Team</span></div>
+          <div class="proj-desc">Scripts Python: port scanner, banner grabber, brute force detector, log analyzer.
+            Documentado em inglês.</div>
+          <div class="proj-impact">🎯 Python + segurança = muito valorizado na Europa</div>
+        </div>
+        <div class="project-card">
+          <div class="proj-header">
+            <div class="proj-name">☕ API REST de Monitoramento</div><span class="tag t-proj">PORTFÓLIO</span>
+          </div>
+          <div class="proj-stack"><span class="tag t-python">Java</span><span class="tag t-python">Spring
+              Boot</span><span class="tag t-aws">AWS</span><span class="tag t-pick">Docker</span></div>
+          <div class="proj-desc">API REST em Java/Spring pra monitorar serviços. Deploy na AWS com Docker. Integra toda
+            a jornada.</div>
+          <div class="proj-impact">🎯 Java + Spring + AWS = stack corporativa padrão na Alemanha</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEMANA -->
+  <div id="semana" class="panel">
+    <div class="section">
+      <div class="sec-label">// semana tipo · modelo geral</div>
+      <div class="day-card">
+        <div class="day-hd">
+          <div>
+            <div class="day-name">Segunda-feira</div>
+            <div class="day-vibe">Inglês ao vivo + estudo principal</div>
+          </div><span class="tag t-ingles">AO VIVO</span>
+        </div>
+        <div class="day-body">
+          <div class="blk">
+            <div class="blk-t">18h00</div>
+            <div class="blk-c">
+              <div class="blk-top"><span class="tag t-fixo">FIXO</span><span class="tag t-ingles">INGLÊS</span><span
+                  class="blk-title">Aula ao vivo 40min</span></div>
+            </div>
+          </div>
+          <div class="blk-sep"></div>
+          <div class="blk">
+            <div class="blk-t">18h45</div>
+            <div class="blk-c">
+              <div class="blk-top"><span class="blk-title">Estudo principal da fase</span></div>
+              <div class="blk-note">2h foco. Feynman no final.</div>
+            </div>
+          </div>
+          <div class="blk-sep"></div>
+          <div class="blk">
+            <div class="blk-t">21h00</div>
+            <div class="blk-c">
+              <div class="blk-top"><span class="blk-title">Conteúdo secundário / PICK 2 vídeos</span></div>
+            </div>
+          </div>
+          <div class="blk-sep"></div>
+          <div class="blk">
+            <div class="blk-t">21h30</div>
+            <div class="blk-c">
+              <div class="blk-top"><span class="tag t-fixo">TODO DIA</span><span class="tag t-alemao">ALEMÃO</span><span
+                  class="blk-title">30min — imóvel</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="day-card">
+        <div class="day-hd">
+          <div>
+            <div class="day-name">Quarta-feira</div>
+            <div class="day-vibe">Inglês ao vivo + conteúdo secundário</div>
+          </div><span class="tag t-ingles">AO VIVO</span>
+        </div>
+        <div class="day-body">
+          <div class="blk">
+            <div class="blk-t">18h00</div>
+            <div class="blk-c">
+              <div class="blk-top"><span class="tag t-fixo">FIXO</span><span class="tag t-ingles">INGLÊS</span><span
+                  class="blk-title">Aula ao vivo 40min</span></div>
+            </div>
+          </div>
+          <div class="blk-sep"></div>
+          <div class="blk">
+            <div class="blk-t">18h45</div>
+            <div class="blk-c">
+              <div class="blk-top"><span class="blk-title">Conteúdo secundário da fase</span></div>
+              <div class="blk-note">2h. Alterna com segunda pra não repetir.</div>
+            </div>
+          </div>
+          <div class="blk-sep"></div>
+          <div class="blk">
+            <div class="blk-t">21h00</div>
+            <div class="blk-c">
+              <div class="blk-top"><span class="tag t-pick">PICK</span><span class="blk-title">2 vídeos — manter
+                  ritmo</span></div>
+            </div>
+          </div>
+          <div class="blk-sep"></div>
+          <div class="blk">
+            <div class="blk-t">21h30</div>
+            <div class="blk-c">
+              <div class="blk-top"><span class="tag t-fixo">TODO DIA</span><span class="tag t-alemao">ALEMÃO</span><span
+                  class="blk-title">30–40min ciclo qui–sáb</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="day-card">
+        <div class="day-hd">
+          <div>
+            <div class="day-name">Quinta-feira</div>
+            <div class="day-vibe">Daily 6h + PICK + Alemão</div>
+          </div><span class="tag t-fixo">DAILY 6H</span>
+        </div>
+        <div class="day-body">
+          <div class="blk">
+            <div class="blk-t">06h00</div>
+            <div class="blk-c">
+              <div class="blk-top"><span class="tag t-fixo">FIXO ATÉ MAR/26</span><span class="blk-title">Daily Discord
+                  — Jefferson 15min</span></div>
+            </div>
+          </div>
+          <div class="blk-sep"></div>
+          <div class="blk">
+            <div class="blk-t">18h00</div>
+            <div class="blk-c">
+              <div class="blk-top"><span class="blk-title">Estudo da fase ou Zoom FIAP (fase 1)</span></div>
+            </div>
+          </div>
+          <div class="blk-sep"></div>
+          <div class="blk">
+            <div class="blk-t">20h00</div>
+            <div class="blk-c">
+              <div class="blk-top"><span class="tag t-pick">PICK</span><span class="blk-title">2–3 vídeos</span></div>
+            </div>
+          </div>
+          <div class="blk-sep"></div>
+          <div class="blk">
+            <div class="blk-t">21h30</div>
+            <div class="blk-c">
+              <div class="blk-top"><span class="tag t-fixo">TODO DIA</span><span class="tag t-alemao">ALEMÃO</span><span
+                  class="blk-title">30min</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="day-card">
+        <div class="day-hd">
+          <div>
+            <div class="day-name">Sexta-feira</div>
+            <div class="day-vibe">Dia leve — respira</div>
+          </div><span class="tag t-rest">LEVE</span>
+        </div>
+        <div class="day-body">
+          <div class="blk">
+            <div class="blk-t">18h00</div>
+            <div class="blk-c">
+              <div class="blk-top"><span class="blk-title">1 vídeo PICK ou revisão leve</span></div>
+              <div class="blk-note">45min máximo. Sem pressão.</div>
+            </div>
+          </div>
+          <div class="blk-sep"></div>
+          <div class="blk">
+            <div class="blk-t">19h00</div>
+            <div class="blk-c">
+              <div class="blk-top"><span class="tag t-ingles">INGLÊS</span><span class="blk-title">Série, filme, YouTube
+                  — lazer em inglês</span></div>
+            </div>
+          </div>
+          <div class="blk-sep"></div>
+          <div class="blk">
+            <div class="blk-t">20h00</div>
+            <div class="blk-c">
+              <div class="blk-top"><span class="tag t-rest">LIVRE</span><span class="blk-title">Sexta pertence a
+                  você</span></div>
+            </div>
+          </div>
+          <div class="blk-sep"></div>
+          <div class="blk">
+            <div class="blk-t">21h30</div>
+            <div class="blk-c">
+              <div class="blk-top"><span class="tag t-fixo">TODO DIA</span><span class="tag t-alemao">ALEMÃO</span><span
+                  class="blk-title">20–30min revisão</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="day-card">
+        <div class="day-hd">
+          <div>
+            <div class="day-name">Sábado</div>
+            <div class="day-vibe">PICK ao vivo + Alemão 12h + tarde produtiva</div>
+          </div><span class="tag t-alemao">AULA 12H</span>
+        </div>
+        <div class="day-body">
+          <div class="blk">
+            <div class="blk-t">7h/9h</div>
+            <div class="blk-c">
+              <div class="blk-top"><span class="tag t-fixo">FIXO</span><span class="tag t-pick">PICK</span><span
+                  class="blk-title">LINUXtips ao vivo — confirma no email</span></div>
+            </div>
+          </div>
+          <div class="blk-sep"></div>
+          <div class="blk">
+            <div class="blk-t">12h00</div>
+            <div class="blk-c">
+              <div class="blk-top"><span class="tag t-fixo">FIXO</span><span class="tag t-alemao">ALEMÃO</span><span
+                  class="blk-title">Aula ao vivo com professor</span></div>
+              <div class="blk-note">Prioridade máxima. Chega com 1 dúvida preparada.</div>
+            </div>
+          </div>
+          <div class="blk-sep"></div>
+          <div class="blk">
+            <div class="blk-t">15h00</div>
+            <div class="blk-c">
+              <div class="blk-top"><span class="blk-title">Estudo principal da fase — 2–3h</span></div>
+            </div>
+          </div>
+          <div class="blk-sep"></div>
+          <div class="blk">
+            <div class="blk-t">18h00</div>
+            <div class="blk-c">
+              <div class="blk-top"><span class="blk-title">Projeto de portfólio ou PICK</span></div>
+              <div class="blk-note">Até 20h. Depois é seu.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="rest-banner">
+        <div class="rest-ico">⛪</div>
+        <div class="rest-msg"><strong style="color:var(--bright);">Domingo — sagrado.</strong><br>Igreja + família +
+          descanso total.<br>Zero estudo. Zero culpa.<br><span style="color:var(--alemao);">Quem descansa aprende mais
+            rápido.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGRAS -->
+  <div id="regras" class="panel">
+    <div class="section">
+      <div class="sec-label">// regras que nunca quebram</div>
+      <div class="rules" style="margin-bottom:14px;">
+        <div class="rule">
+          <div class="rule-ico">🇩🇪</div>
+          <div class="rule-title">Alemão todo dia</div>
+          <div class="rule-txt">30min às 21h30. Imóvel. É sua porta pra Alemanha.</div>
+        </div>
+        <div class="rule">
+          <div class="rule-ico">📌</div>
+          <div class="rule-title">Fixos não movem</div>
+          <div class="rule-txt">Inglês seg/qua 18h. Alemão sáb 12h. PICK sáb manhã. Daily qui 6h.</div>
+        </div>
+        <div class="rule">
+          <div class="rule-ico">⛪</div>
+          <div class="rule-title">Domingo sagrado</div>
+          <div class="rule-txt">Igreja + família. Zero estudo. Sem culpa.</div>
+        </div>
+        <div class="rule">
+          <div class="rule-ico">🍺</div>
+          <div class="rule-title">1–2 folgas/mês</div>
+          <div class="rule-txt">Amigos, tio, fazenda. O plano absorve.</div>
+        </div>
+        <div class="rule">
+          <div class="rule-ico">🌙</div>
+          <div class="rule-title">22h é o fim</div>
+          <div class="rule-txt">Você acorda 4h30. Dormir é parte do plano.</div>
+        </div>
+        <div class="rule">
+          <div class="rule-ico">🏋️</div>
+          <div class="rule-title">Academia não mexe</div>
+          <div class="rule-txt">5h30–6h30. Saúde mental = base de tudo.</div>
+        </div>
+        <div class="rule">
+          <div class="rule-ico">💆</div>
+          <div class="rule-title">Sexta é leve</div>
+          <div class="rule-txt">1 vídeo só. Livre a partir das 20h.</div>
+        </div>
+        <div class="rule">
+          <div class="rule-ico">🌾</div>
+          <div class="rule-title">Vida acontece</div>
+          <div class="rule-txt">Saída com tio, fazenda — vai sem culpa. Consistência é no mês.</div>
+        </div>
+      </div>
+      <div class="sec-label">// super projeto final · dez 2025</div>
+      <div
+        style="background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(34,197,94,.08));border:1px solid rgba(251,191,36,.25);border-radius:16px;padding:20px;">
+        <div
+          style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--gold);margin-bottom:8px;">
+          PROJETO FINAL · DEZ 2025</div>
+        <div
+          style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:var(--bright);margin-bottom:10px;line-height:1;">
+          🚀 SecureOps Platform</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.6;margin-bottom:12px;">Plataforma que integra tudo
+          que você aprendeu no ano. O projeto principal do seu LinkedIn e GitHub.</div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;"><span
+            class="tag t-python">Python</span><span class="tag t-python">Java/Spring</span><span
+            class="tag t-pick">Docker</span><span class="tag t-pick">Kubernetes</span><span
+            class="tag t-aws">AWS</span><span class="tag t-pos">Red Team</span><span class="tag t-eda">C/EDA</span><span
+            class="tag t-redes">Redes</span></div>
+        <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:14px;">
+          <div style="display:flex;gap:8px;font-size:12px;color:var(--text);"><span
+              style="color:var(--gold);">→</span>Scanner de hosts em C com lista encadeada + SQLite</div>
+          <div style="display:flex;gap:8px;font-size:12px;color:var(--text);"><span
+              style="color:var(--gold);">→</span>API REST em Java/Spring que consome o scanner</div>
+          <div style="display:flex;gap:8px;font-size:12px;color:var(--text);"><span
+              style="color:var(--gold);">→</span>Scripts Python de automação e análise de logs</div>
+          <div style="display:flex;gap:8px;font-size:12px;color:var(--text);"><span
+              style="color:var(--gold);">→</span>Tudo containerizado Docker + deploy Kubernetes na AWS</div>
+          <div style="display:flex;gap:8px;font-size:12px;color:var(--text);"><span
+              style="color:var(--gold);">→</span>Pipeline CI/CD com scan Trivy</div>
+          <div style="display:flex;gap:8px;font-size:12px;color:var(--text);"><span
+              style="color:var(--gold);">→</span>README em inglês e alemão</div>
+          <div style="display:flex;gap:8px;font-size:12px;color:var(--text);"><span
+              style="color:var(--gold);">→</span>Write-up de segurança documentando o projeto</div>
+        </div>
+        <div style="font-size:12px;color:#4ade80;font-weight:700;">🎯 Esse projeto diferencia você de 95% dos candidatos
+          no mercado europeu.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PICK -->
+  <div id="pick" class="panel">
+    <div class="section">
+      <div class="sec-label">// pick tracker · contínuo até mar/2027</div>
+      <div
+        style="background:var(--s1);border:1px solid rgba(99,102,241,.3);border-radius:14px;padding:16px;margin-bottom:14px;">
+        <div
+          style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:#818cf8;margin-bottom:4px;">
+          🐳 PICK / LINUXtips</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:14px;">
+          Programa contínuo · Meta: 3 vídeos/dia · Até mar/2027 · Sáb ao vivo (confirma horário no email)</div>
+        <div class="pt-stats">
+          <div class="pt-stat">
+            <div class="pt-num" style="color:var(--pos);">~30</div>
+            <div class="pt-lbl">vídeos atrasados</div>
+          </div>
+          <div class="pt-stat">
+            <div class="pt-num" style="color:var(--gold);">3</div>
+            <div class="pt-lbl">meta por dia</div>
+          </div>
+          <div class="pt-stat">
+            <div class="pt-num" style="color:var(--alemao);">~10</div>
+            <div class="pt-lbl">dias p/ zerar</div>
+          </div>
+        </div>
+        <div class="pt-row">
+          <div class="pt-rl">Fase 1 (mai)</div>
+          <div class="pt-bw">
+            <div class="pt-b" style="width:100%"></div>
+          </div>
+          <div class="pt-rv">3–4/dia</div>
+        </div>
+        <div class="pt-row">
+          <div class="pt-rl">Fases 2–4</div>
+          <div class="pt-bw">
+            <div class="pt-b" style="width:65%"></div>
+          </div>
+          <div class="pt-rv">2–3/dia</div>
+        </div>
+        <div class="pt-row">
+          <div class="pt-rl">Manutenção</div>
+          <div class="pt-bw">
+            <div class="pt-b" style="width:40%"></div>
+          </div>
+          <div class="pt-rv">2/dia</div>
+        </div>
+      </div>
+      <div class="sec-label">// checklist PICK — containers days 1–6</div>
+      <div class="checklist" id="clp1">
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">Day 1 — Fundamentos de containers</div>
+            <div class="check-sub">Concluído</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">Day 2 — Docker prático</div>
+            <div class="check-sub">Em andamento — terminar essa semana</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">Day 3 — Distroless e Segurança</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">Day 4 — Volumes e Storage</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">Day 5 — Networks no Docker</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">Day 6 — Docker Compose</div>
+          </div>
+        </div>
+      </div>
+      <div class="sec-label">// checklist PICK — kubernetes</div>
+      <div class="checklist" id="clp2">
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">Kubernetes Day 1 — kind + kubectl</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">Kubernetes Day 2</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">Kubernetes Day 3</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">Kubernetes Day 4</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">Kubernetes Day 5</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">Kubernetes Day 6</div>
+          </div>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box">
+            <div class="check-inner">✓</div>
+          </div>
+          <div>
+            <div class="check-label">Aulas ao vivo sábado — em dia</div>
+            <div class="check-sub">Confirma horário (7h ou 9h) todo sábado no email</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── NAV ──
+    function show(id, el) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      el.classList.add('active');
+    }
+
+    // ── CHECKLIST ──
+    function toggle(el) { el.classList.toggle('done'); save(); }
+
+    function save() {
+      const s = {};
+      document.querySelectorAll('.checklist').forEach(c => {
+        s[c.id] = [...c.querySelectorAll('.check-item')].map(i => i.classList.contains('done'));
+      });
+      try { localStorage.setItem('cr25', JSON.stringify(s)); } catch (e) { }
+    }
+
+    function load() {
+      try {
+        const s = JSON.parse(localStorage.getItem('cr25') || '{}');
+        document.querySelectorAll('.checklist').forEach(c => {
+          if (s[c.id]) {
+            const items = c.querySelectorAll('.check-item');
+            s[c.id].forEach((d, i) => { if (d && items[i]) items[i].classList.add('done'); });
+          }
+        });
+      } catch (e) { }
+    }
+    load();
+
+    // ── TOAST ──
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.opacity = '1';
+      t.style.transform = 'translateY(0)';
+      setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateY(20px)'; }, 3500);
+    }
+
+    // ── SERVICE WORKER ──
+    let swReg = null;
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => { swReg = reg; })
+        .catch(e => console.log('SW erro:', e));
+    }
+
+    // ── PWA INSTALL ──
+    let deferredPrompt = null;
+
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const btn = document.getElementById('install-btn');
+      if (btn) btn.style.display = 'flex';
+    });
+
+    window.addEventListener('appinstalled', () => {
+      deferredPrompt = null;
+      const btn = document.getElementById('install-btn');
+      if (btn) btn.style.display = 'none';
+      showToast('Planner instalado!');
+    });
+
+    function installApp() {
+      if (!deferredPrompt) { showToast('Abra no Chrome e toque em "Adicionar à tela inicial"'); return; }
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+    }
+
+    // ── NOTIFICAÇÕES ──
+    const LEMBRETES = [
+      { hora: 17, min: 50, title: '⚡ Hora de estudar!', body: '18h chegando — prepara o ambiente.', tag: 'start' },
+      { hora: 21, min: 25, title: '🇩🇪 Alemão em 5min', body: '30min. Imóvel. Porta pra Alemanha.', tag: 'alemao' },
+      { hora: 21, min: 55, title: '🌙 Encerrando o dia', body: 'Anota o que aprendeu hoje. Dorme bem.', tag: 'end' },
+      { hora: 5, min: 25, title: '🏋️ Academia em 5min', body: '5h30 — academia. Você sempre vai.', tag: 'gym' },
+    ];
+
+    function sendNotif(title, body, tag) {
+      if (!swReg || !swReg.active) return;
+      swReg.active.postMessage({ type: 'SHOW_NOTIFICATION', title, body, tag });
+    }
+
+    function agendarTodos() {
+      LEMBRETES.forEach(l => {
+        const now = new Date();
+        const t = new Date();
+        t.setHours(l.hora, l.min, 0, 0);
+        if (t <= now) t.setDate(t.getDate() + 1);
+        setTimeout(() => {
+          sendNotif(l.title, l.body, l.tag);
+          setInterval(() => sendNotif(l.title, l.body, l.tag), 86400000);
+        }, t - now);
+      });
+      // Daily quinta
+      const now = new Date();
+      const thu = new Date(); thu.setHours(5, 45, 0, 0);
+      thu.setDate(thu.getDate() + ((4 - now.getDay() + 7) % 7 || 7));
+      setTimeout(() => {
+        sendNotif('Daily Discord em 15min', 'Jefferson — LINUXtips. 6h em ponto.', 'daily');
+        setInterval(() => sendNotif('Daily Discord em 15min', 'Jefferson — LINUXtips. 6h em ponto.', 'daily'), 604800000);
+      }, thu - now);
+      // Alemão sábado
+      const sat = new Date(); sat.setHours(11, 45, 0, 0);
+      sat.setDate(sat.getDate() + ((6 - now.getDay() + 7) % 7 || 7));
+      setTimeout(() => {
+        sendNotif('🇩🇪 Alemão em 15min!', 'Chega com 1 dúvida. 12h em ponto.', 'alemao-aula');
+        setInterval(() => sendNotif('🇩🇪 Alemão em 15min!', 'Chega com 1 dúvida. 12h em ponto.', 'alemao-aula'), 604800000);
+      }, sat - now);
+    }
+
+    async function ativarNotificacoes() {
+      if (!('Notification' in window)) { showToast('Navegador não suporta notificações.'); return; }
+      const perm = await Notification.requestPermission();
+      if (perm === 'granted') {
+        agendarTodos();
+        const btn = document.getElementById('notif-btn');
+        if (btn) { btn.textContent = '🔔 Lembretes ativos'; btn.style.cssText += ';background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.4);color:#4ade80'; }
+        showToast('✅ Lembretes ativados!');
+      } else {
+        showToast('⚠️ Permita notificações nas configurações.');
+      }
+    }
+
+    if ('Notification' in window && Notification.permission === 'granted') {
+      const btn = document.getElementById('notif-btn');
+      if (btn) { btn.textContent = '🔔 Lembretes ativos'; btn.style.cssText += ';background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.4);color:#4ade80'; }
+    }
+  </script>
+</body>
+
+</html>
